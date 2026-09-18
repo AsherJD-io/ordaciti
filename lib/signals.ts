@@ -1,0 +1,2 @@
+// Signal generation logic
+export {}

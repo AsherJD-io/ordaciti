@@ -1,0 +1,35 @@
+"""
+Ordaciti Data Processing Requirements
+======================================
+
+Core dependencies for the data acquisition and analysis pipeline.
+
+Do not add unnecessary dependencies. The capstone avoids Spark, dbt,
+BigQuery, Postgres, Kubernetes, Kestra, Airflow, Kafka, Flink, vector
+databases, RAG infrastructure, full agent frameworks, microservices,
+authentication, and user accounts.
+"""
+
+# Data acquisition
+requests>=2.31.0
+httpx>=0.25.0
+
+# Data processing
+pandas>=2.1.0
+numpy>=1.26.0
+
+# Text normalization and similarity
+rapidfuzz>=3.5.0
+
+# Geospatial (only if genuinely necessary)
+# geopandas>=0.14.0
+# shapely>=2.0.0
+
+# Date parsing
+python-dateutil>=2.8.0
+
+# JSON handling (stdlib in most cases, but explicit)
+orjson>=3.9.0
+
+# Numeric cleanup
+cleanmatic>=0.0.13

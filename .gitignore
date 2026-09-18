@@ -1,0 +1,46 @@
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Node
+node_modules/
+.next/
+out/
+.vercel/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Testing / tooling
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs / temporary files
+*.log
+*.tmp
+tmp/
+temp/
+
+# Generated datasets
+data/raw/
+data/processed/
+
+# Generated media
+public/screenshots/generated/
+
+# Credentials
+credentials.json
+service-account*.json
+*.pem
+*.key
