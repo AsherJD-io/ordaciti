@@ -298,26 +298,28 @@ function buildEvidencePrompt(ev: EvidenceForPrompt): string {
 }
 
 // ---------------------------------------------------------------------------
-// Core explain function
+// AI client factory
 // ---------------------------------------------------------------------------
 
-async function getOpenAi(): Promise<OpenAI | null> {
+function getOpenAi(): Promise<OpenAI | null> {
   const apiKey = process.env.AI_API_KEY
   const model = process.env.AI_MODEL
 
   if (!apiKey || !model) {
-    return null
+    return Promise.resolve(null)
   }
 
   try {
-    return new OpenAI({
+    return Promise.resolve(new OpenAI({
       apiKey,
       baseURL: process.env.OPENAI_BASE_URL ?? undefined,
-    })
+    }))
   } catch {
-    return null
+    return Promise.resolve(null)
   }
 }
+
+export { isValidExplainResponse }
 
 export async function explainProject(request: ExplainRequest, forceRefresh = false): Promise<AiResult> {
   const { project_id } = request
