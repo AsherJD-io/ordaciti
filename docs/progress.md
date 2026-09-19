@@ -992,9 +992,13 @@ Project 255 remains **REJECTED** as the primary Ordaciti dataset. It is a ward-l
 | 1 — Repository Skeleton | COMPLETE | 2026-09-18 | Commit c668905 |
 | 2 — Source Discovery | COMPLETE | 2026-09-19 | Initial investigation: no viable source found |
 | 2B — Server-rendered `/Projects` Route Verification | COMPLETE | 2026-09-19 | **VIABLE PRIMARY SOURCE FOUND** via `Projects/fetchprojects/{page}` endpoint |
-| 3 — Data Ingestion | NOT STARTED | — | Ready for Phase 3. Primary data access path verified. |
+|| 3 — Data Ingestion | COMPLETE | 2026-09-19 | Source-of-truth correction + verification. Explicit LIVE/REPLAY modes. See Phase 3 section below. |
 
-**Current state:** Phase 2 COMPLETE. A viable primary data source has been verified. The `https://www.ocds.kdsg.gov.ng/Projects/fetchprojects/{page}` endpoint provides programmatic access to 1,379 real Kaduna State procurement projects. Phase 3 (Data Ingestion) is ready to begin but must NOT be started in this task.
+**Current state:** Phase 2 COMPLETE. A viable primary data source has been verified. The `https://www.ocds.kdsg.gov.ng/Projects/fetchprojects/{page}` endpoint provides programmatic access to 1,379 raw records across 231 pages (230 populated, page 231 empty), representing 610 distinct Kaduna State procurement projects (ID range 2-848).
+
+## Phase 3 — Data Ingestion
+
+**Status:** COMPLETE — source-of-truth correction and verification (2026-09-19)
 
 **Remaining limitations to carry into Phase 3:**
 1. OCID not available — OCDS API endpoints remain broken
