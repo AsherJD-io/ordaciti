@@ -122,10 +122,10 @@ def normalize_abbreviation_text(value):
 # Known Kaduna State LGAs (official names) — conservative canonical set.
 # These are the LGAs that appear in the source data with recognizable forms.
 KNOWN_KADUNA_LGAS = {
-    "Birnin Gwari", "Chikun", "Giwa", "Gwadwala", "Igabi", "Ikara",
+    "Birnin Gwari", "Chikun", "Giwa", "Igabi", "Ikara",
     "Jaba", "Jema'a", "Kachia", "Kaduna North", "Kaduna South",
-    "Kagarko", "Kajuru", "Kaura", "Kubau", "Kudan", "Lere",
-    "Makarfi", "Sanga", "Soba", "Zangon Kataf", "Zaria",
+    "Kagarko", "Kajuru", "Kaura", "Kauru", "Kubau", "Kudan", "Lere",
+    "Makarfi", "Sabon Gari", "Sanga", "Soba", "Zangon Kataf", "Zaria",
 }
 
 # LGA normalization mapping: variant -> canonical LGA name.
@@ -336,7 +336,11 @@ def parse_date(value):
     if stripped.upper() in ("N/A", "NA", "NULL", "NONE", "INVALID"):
         return None
 
-    # Handle known invalid dates like "30th November -0001"
+    # Handle known invalid dates like "30th November -0001" or "00XX" years
+    # 00XX years (e.g. 0016, 0017, 0018) are data entry errors and must not
+    # be treated as valid dates — they would create fabricated BC-era dates
+    if re.search(r"\b00\d{2}\b", stripped):
+        return None
     if re.search(r"-0001\b", stripped):
         return None
 
