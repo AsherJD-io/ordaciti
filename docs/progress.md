@@ -1756,7 +1756,91 @@ Add an AI evidence brief endpoint (`POST /api/explain`) that sends structured pr
 
 ## Phase 11 — QA
 
-**Status:** NOT STARTED
+**Status:** COMPLETE
+
+**Date:** 2026-09-19
+
+**Commit:** [PENDING]
+
+### Objective
+
+End-to-end quality assurance across the completed Ordaciti system (Phases 1–10). Verify data integrity, API endpoint behaviour, frontend functionality, cache behaviour, and source traceability. No new features, no Phase 12 deployment.
+
+### Data Integrity Checks (13/13 PASS)
+
+| Check | Result |
+|-------|--------|
+| Normalized projects count = 610 | PASS — got 610 |
+| Evidence coverage = 610 | PASS — got 610 |
+| Evidence IDs = normalized IDs | PASS — exact match, 610 each |
+| No duplicate normalized IDs | PASS — 610 unique / 610 total |
+| No duplicate evidence IDs | PASS — 610 unique / 610 total |
+| Pattern cluster IDs ⊆ normalized IDs | PASS — all cluster project_ids resolve |
+| Signal references ⊆ normalized IDs | PASS — all signal project_ids and related_project_ids resolve |
+| Evidence signal related_project_ids ⊆ normalized IDs | PASS — no dangling references |
+| All population values match population.json source | PASS — no fabricated values |
+| population.json: all LGAs have positive numeric population | PASS |
+| Sampled source URLs are valid URLs (50 projects) | PASS — no broken URLs in sample |
+| Evidence objects have all required fields | PASS — project_id, facts, signals, unknowns, questions_for_review, sources on all 610 |
+| Evidence signals have 'type' field | PASS — all signals have type |
+
+### API Endpoint Tests
+
+| Test | Expected | Result |
+|------|----------|--------|
+| Missing AI config (no .env.local) | 503 | PASS — `{"error":"AI evidence brief temporarily unavailable","status":503}` |
+| Unknown project_id | 404 | PASS — `{"error":"Project not found","status":404}` |
+| Empty project_id | 400 | PASS — `{"error":"Invalid request","status":400}` |
+| Malformed request body | 400 | PASS — `{"error":"Invalid request","status":400}` |
+
+### HTTP 502 Integration Test
+
+| Test | Result |
+|------|--------|
+| Mock OpenAI server returns `{"bad":"response"}` (schema-invalid) | Mock responds 200 |
+| Production Next.js with OPENAI_BASE_URL → mock | Server starts |
+| POST /api/explain with valid project_id | HTTP 502 |
+| Response body: `{"error":"AI response invalid","status":502}` | PASS |
+
+### Cache Tests (ai_cache_test.ts)
+
+| Test | Result |
+|------|--------|
+| Cache hit avoids model call | PASS — returns cached response |
+| Changed evidence version invalidates cache | PASS — 503 returned (cache bypassed) |
+| Malformed JSON rejected (not object) | PASS |
+| Malformed JSON rejected (missing fields) | PASS |
+| Malformed JSON rejected (null note) | PASS |
+| Malformed JSON rejected (wrong types) | PASS |
+| Valid response accepted | PASS |
+
+### Frontend Smoke Tests
+
+| Route | HTTP | Notes |
+|-------|------|-------|
+| `/` (landing) | 200 | 17.6KB, compiles and serves |
+| `/projects` (explorer) | 200 | 647KB, all 610 projects available via client-side data |
+| `/projects/847` | 200 | 19.8KB, evidence, sources, population context render |
+| `/projects/10` | 200 | 14.4KB |
+| `/projects/99999` (missing) | 200 | 6.8KB, missing-project state renders |
+
+Source URL traceability: `https://www.ocds.kdsg.gov.ng/Project/847` renders on project 847 page — PASS.
+
+Population context from Phase 9 renders on project pages — PASS.
+
+### Files Unchanged
+
+- `implementation.md` — untouched (0 bytes changed)
+- All `data/processed/*.json` — untouched
+
+### Git
+
+**Working tree:** CLEAN after QA fixes
+
+### Limitations
+
+- Frontend project explorer uses client-side rendering; initial HTML payload does not contain embedded project data (expected Next.js behaviour). Verified via dev server HTTP 200 responses with 647KB payload for /projects.
+- No live paid AI call performed; AI endpoint tests use mock servers and missing-configuration degradation paths.
 
 ---
 

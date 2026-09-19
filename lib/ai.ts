@@ -319,8 +319,6 @@ function getOpenAi(): Promise<OpenAI | null> {
   }
 }
 
-export { isValidExplainResponse }
-
 export async function explainProject(request: ExplainRequest, forceRefresh = false): Promise<AiResult> {
   const { project_id } = request
 
