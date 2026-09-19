@@ -1414,19 +1414,66 @@ Implement the five core signals per implementation.md section 12-17.
 
 ## Phase 7 — Evidence Model
 
-**Status:** NOT STARTED
+**Status:** COMPLETE
 
-**Date:** —
+**Date:** 2026-09-19
 
 **Commit:** —
 
-### Prerequisites
+### Objective
 
-Phase 6 signals must be complete. This phase is ready to begin.
+Build one structured evidence object per project per implementation.md section 21, separating facts, signals, unknowns, context, questions, and sources.
 
-### Scope
+### Implemented
 
-Build evidence objects containing facts, signals, unknowns, context, questions, and sources per implementation.md section 21.
+- `scripts/build_evidence.py` — Deterministic evidence model builder
+- `data/processed/evidence.json` — 610 evidence objects
+
+### Evidence object structure
+
+Each evidence object contains:
+
+- **facts**: Direct or deterministically derived from normalized project records, Phase 5 cluster data, and Phase 6 signals
+- **signals**: Attached from signals.json (REPEAT_INTERVENTION, CONTRACTOR_RECURRENCE, EVIDENCE_GAP, RECORD_CHANGE, ALLOCATION_CONTEXT)
+- **unknowns**: Explicitly represents unavailable/unsupported information (OCID, release data, implementation evidence, payment evidence, completion evidence, population context)
+- **context**: Cluster history, cumulative values, contractor relationships, LGA allocation context
+- **questions_for_review**: Neutral review questions grounded in evidence and unknowns
+- **sources**: Source URL, source record metadata, data availability notes
+
+### Lifecycle evidence
+
+Each evidence object includes a full lifecycle assessment (planning, tender, award, contract, amendment, implementation, payment, completion, termination) with states: available, partial, missing, unknown. Missing lifecycle evidence is described as unavailable in the source, not proof that the event did not occur.
+
+### Signal integration
+
+- REPEAT_INTERVENTION: Traces to cluster ID, related project IDs, intervals, cumulative values
+- CONTRACTOR_RECURRENCE: Traces to real contractor/project relationships
+- EVIDENCE_GAP: Retains full lifecycle assessment from Phase 6
+- RECORD_CHANGE: Unavailable (no OCDS releases in source) — explicitly marked unavailable in every evidence object
+- ALLOCATION_CONTEXT: LGA-level aggregation attached where LGA matches; population metrics marked unavailable
+
+### Validation
+
+- 610 evidence objects = 610 normalized projects (one-to-one)
+- All evidence project IDs exist in normalized_projects.json
+- All attached signals exist in signals.json
+- No invented dates, amounts, contractors, release IDs, or lifecycle events
+- RECORD_CHANGE unavailable in all 610 evidence objects
+- Source URL traceability: 610/610 projects
+- Source ID traceability: 610/610 projects
+- Lifecycle evidence: 610/610 with full 9-stage assessment
+- Contract/budget amounts preserved (not zeroed)
+- Unknowns represent missing data, not evidence of absence
+- Questions are neutral (no corruption/fraud/collusion/waste assertions)
+- Deterministic: two runs produce identical output
+- `implementation.md` untouched
+
+### Limitations
+
+- RECORD_CHANGE unavailable for all projects (no OCDS release data in source)
+- ALLOCATION_CONTEXT population metrics unavailable (no population data)
+- No geographic coordinates in dataset (0/610 projects)
+- No semantic similarity (not in scope)
 
 ---
 
