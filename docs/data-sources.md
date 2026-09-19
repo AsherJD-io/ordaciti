@@ -26,10 +26,6 @@
 
 **Date range:** Projects from 2019 onwards observed in portal samples.
 
-**Coverage:** Kaduna State, Nigeria. Approximately 1,379+ projects registered on the OCDS portal. The newer OC4IDS portal reports 1,635 published projects (as of late 2025), with 393 having coordinates.
-
-**Date range:** Projects from 2019 onwards observed in portal samples.
-
 **Known limitations:**
 - API endpoints currently non-functional (HTTP 500)
 - Data publication gaps documented by CoST Kaduna (incomplete datasets, delayed publication)
