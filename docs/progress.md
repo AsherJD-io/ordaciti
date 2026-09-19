@@ -1011,6 +1011,67 @@ Project 255 remains **REJECTED** as the primary Ordaciti dataset. It is a ward-l
 
 These limitations must be documented in the data-sources.md and limitations.md and handled appropriately in the normalization and analysis stages.
 
+### Phase 3 Sourcing Correction Summary
+
+The Phase 3 ingestion script (`scripts/fetch_kaduna.py`) was corrected to enforce explicit source modes:
+
+- **LIVE mode (default):** `python3 scripts/fetch_kaduna.py` fetches directly from `https://www.ocds.kdsg.gov.ng/Projects/fetchprojects/{page_number}`. No cached data, no `/tmp` fallback. Fails clearly if unreachable.
+- **REPLAY mode (explicit):** `python3 scripts/fetch_kaduna.py --replay` processes existing `data/raw/kaduna_projects.json`. Must be explicitly requested. Validation output identifies the run as replay/offline.
+
+### Canonical Schema
+
+The canonical project schema is the 25 fields defined in implementation.md section 8:
+
+`project_id, ocid, title, description, mda, sector, category, lga, location_text, latitude, longitude, procurement_method, budget_year, budget_amount, contract_amount, date_of_advert, date_of_award, contract_start, contract_end, contractor, status, source_url, source_release_id, source_updated_at, retrieved_at`
+
+The processed output also contains:
+- **contractor_count** and **contractors** — contractor-association extensions (not canonical fields). These preserve all contractor associations required by the source model.
+- **original_* fields** — preserved original source values for auditability (per implementation.md §8: "Additional source fields may be retained").
+
+### Verification Results
+
+- **Compile:** PASS
+- **Replay test:** 231 pages, 1379 raw records, 610 distinct projects, 82 multi-contractor projects, 692 contractor associations, ID range 2-848, ID 1 absent, page 231 empty. All reconciliation checks PASSED.
+- **Replay idempotency:** Bit-for-bit identical `projects.json` and `ingestion_validation.json` across repeated runs (retrieved_at uses source snapshot timestamp).
+- **Live smoke test:** Single-page live fetch (page 1) succeeded — HTTP 200, valid JSON, 6 records. Full 231-page live ingestion NOT repeated during recovery (known WSL Python runtime network intermittency).
+- **Source mode verification:** Default code path calls `fetch_all_pages_live()` with no replay fallback. `/tmp` does not appear in any execution path.
+
+### Processing Model
+
+- project_id = project entity (610 unique projects)
+- contractor = child/repeated association retained separately (692 associations)
+- Identical duplicate publication rows collapsed (523 groups, lossless)
+- Materially different contractor associations retained (82 groups, contractor fields only)
+- Non-contractor fields stable per project_id
+- Canonical 25-field schema implemented with all fields present
+- Missing source values remain null
+
+### Source Provenance
+
+- Raw snapshot: `source_mode: phase2b_evidence_rebuilt` (honest — rebuilt from Phase 2B evidence)
+- Replay output: `source_mode: replay`
+- Live mode: default, no fallback
+- `/tmp/p2b_*.json`: NOT an implicit production input
+- `data/raw/kaduna_projects.json`: NOT silently used as a live fallback
+
+### Known Limitation
+
+The Kaduna endpoint is intermittently unreachable from the WSL Python runtime. Full 231-page live ingestion cannot be guaranteed from this environment.
+
+### Phase Status Table
+
+|| Phase | Status | Date | Notes |
+||---|---|---|---|---|
+|| 1 — Repository Skeleton | COMPLETE | 2026-09-18 | Commit c668905 |
+|| 2 — Source Discovery | COMPLETE | 2026-09-19 | Initial investigation: no viable source found |
+|| 2B — `/Projects` Route Verification | COMPLETE | 2026-09-19 | VIABLE PRIMARY SOURCE FOUND |
+|| 3 — Data Ingestion | COMPLETE | 2026-09-19 | Source-of-truth correction + audit complete |
+|| 4 — Normalization | NOT STARTED | — | Next phase |
+
+**Current state:** Phase 3 COMPLETE. Phase 3 ingestion implementation is in place with verified explicit source modes, correct canonical 25-field schema, and preserved contractor associations. Ready to begin Phase 4 (Normalization).
+
+**Next action:** Begin Phase 4 — Normalization, per implementation.md.
+
 ---
 
 ## Git
