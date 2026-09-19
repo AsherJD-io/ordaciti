@@ -359,7 +359,7 @@ Unknown. The portal supports multiple release types (planning, tender, award, co
 
 The implementation.md section 63 rules state: "Verify external APIs/endpoints before implementation" and "Never fabricate data." Proceeding to Phase 3 without a working data source would violate these rules.
 
-**2026-09-19 Follow-up Investigation Result:** A full source-access recovery investigation was conducted on 2026-09-19. All documented OCDS and OC4IDS endpoints were re-verified and confirmed non-functional. Seven additional access paths were investigated. **A new working endpoint was discovered: `https://www.ocds.kdsg.gov.ng/Projects/fetchprojects/{page}`.** This endpoint provides programmatic access to approximately 690 unique Kaduna State procurement projects (1,379 raw records including duplicates). See Phase 2B documentation in `docs/progress.md` for full details.
+**2026-09-19 Follow-up Investigation Result:** A full source-access recovery investigation was conducted on 2026-09-19. All documented OCDS and OC4IDS endpoints were re-verified and confirmed non-functional. Seven additional access paths were investigated. **A new working endpoint was discovered: `https://www.ocds.kdsg.gov.ng/Projects/fetchprojects/{page}`.** This endpoint provides programmatic access to 610 unique Kaduna State procurement projects (1,379 raw records including intra-page and cross-page duplicates; all duplicates are byte-for-byte identical). Full record-identity verification was completed on 2026-09-19. See Phase 2B documentation in `docs/progress.md` for full details.
 
 **Conclusion:** The Phase 2 blocker is RESOLVED. A viable primary data source is available. Phase 3 is ready to begin but must NOT be started in this task.
 

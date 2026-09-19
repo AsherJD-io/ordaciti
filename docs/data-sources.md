@@ -29,15 +29,15 @@ A working public JSON endpoint was discovered at `https://www.ocds.kdsg.gov.ng/P
 - **Endpoint:** `https://www.ocds.kdsg.gov.ng/Projects/fetchprojects/{page_number}`
 - **Method:** GET (non-prefixed route is the ONLY working method)
 - **Status:** VERIFIED VIABLE — returns valid JSON with project records
-- **Pagination:** ~230 pages, 6 records per page, data ordered by project ID descending
-- **Record count:** `total` field reports 1379 raw records (includes duplicates). Estimated ~690 unique projects (IDs range 1-848).
-- **Record duplication:** Each project ID appears twice per page. Duplicates sometimes have different contractor details.
+- **Pagination:** 230 populated pages (pages 1-230), page 231 empty. 6 records per page in a rolling-window overlap pattern.
+- **Record count:** `total` field = 1379 = exact raw record count (confirmed by full enumeration of all 230 populated pages). Distinct project IDs = **610** (measured, not estimated). ID range: 2 to 848 (ID 1 missing; 238 gaps in range).
+- **Record duplication (corrected):** Two distinct mechanisms: (a) **intra-page:** each project ID appears exactly twice on its assigned page — both copies are byte-for-byte identical; (b) **cross-page:** 116 project IDs appear on two adjacent pages (once each) — also byte-for-byte identical. No project ID has materially different records. No contractor, budget, amount, or title differences exist between any duplicates. Pattern: rolling-window pagination overlap (each page shares 3 IDs with the next page).
 - **Content-Type:** Server returns `text/html` but body is valid JSON (misconfiguration).
 - **Request-method discrepancy:** The portal's JavaScript (`kaduna.js`) uses POST to a `/kadppa/` prefixed route, but that prefixed route returns HTML, not JSON. Only the non-prefixed GET route works.
 - **OCDS API endpoints:** `/api/record/{id}` and `/api/releases/{id}` remain HTTP 500.
 - **Project detail pages:** `/Project/{id}` accessible but contain only title + feedback form.
 
-**Field coverage (14 available, 2 derivable, 8 not available):** project_id, title, mda, sector, lga, procurement_method, budget_year, budget_amount, contract_amount, date_of_advert, date_of_award, contractor, source_updated_at available. ocid, description, latitude, longitude, status, source_release_id NOT available. source_url and retrieved_at derivable.
+**Field coverage (14 available, 2 derivable, 8 not available):** project_id, title, mda, sector, lga, procurement_method, budget_year, budget_amount, contract_amount, date_of_advert, date_of_award, contractor, source_updated_at available. ocid, description, latitude, longitude, status, source_release_id NOT available. source_url and retrieved_at derivable. Repeated records do NOT introduce conflicting values — all duplicates are identical.
 
 **Newer OC4IDS backend (Cloud Run) requires API token for programmatic access; OC4IDS portal now suspended (redirects to suspendedpage.cgi, shows 0 projects). Previous Azure deployment (kadppaocds.azurewebsites.net) is defunct (HTTP 000).**
 

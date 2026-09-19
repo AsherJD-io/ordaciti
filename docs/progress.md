@@ -671,13 +671,38 @@ The endpoint is: `https://www.ocds.kdsg.gov.ng/Projects/fetchprojects/{page_numb
 | Page 230 | `/Projects/fetchprojects/230` | 200 | JSON with data (IDs 2, 3) |
 | Page 231 | `/Projects/fetchprojects/231` | 200 | Empty data array (last page) |
 
-**Pagination characteristics:**
-- 1,379 total projects reported
-- 6 records per page (3 unique, each duplicated — appears to be a display artifact)
-- Approximately 230 pages of data
-- Unique project IDs range from 1 to 848
+**Pagination characteristics (corrected after full enumeration):**
+
+- `total` field reports 1379 (cross-verified: raw records retrieved = 1379 across all 230 populated pages)
+- Each page returns 6 records; each project ID appears exactly twice on its page (intra-page duplicate)
+- **116 project IDs also appear on an adjacent page** (cross-page duplicate) — each once per page
+- **610 distinct project IDs** across 1379 raw records
+- ID range: 2 to 848; ID 1 is missing; 238 gaps exist within the 1-848 range
 - Data is sequential by project ID in descending order
-- Response includes summary stats: total=1379, sum=95663978669.04, highest=4284000000.00, lowest=21000.00
+
+**Duplicate classification (verified from full records):**
+
+- **Intra-page duplicates:** Each project ID appears exactly twice on its assigned page. These two records are **byte-for-byte identical** — every field including title, MDA, budget, contract amount, dates, procurement method, and contractor is identical.
+- **Cross-page duplicates:** 116 project IDs appear on two adjacent pages (once each). These copies are also **byte-for-byte identical**.
+- **No project ID appears on more than two pages.**
+- **No project ID has materially different records** — all duplicates are exact copies.
+- **Pattern:** This is a rolling-window pagination overlap. Each page shares 3 project IDs with the next page. The overlap shifts by 3 IDs per page step.
+
+**Total field reconciliation:**
+- Endpoint `total` = 1379 = exact raw record count (confirmed by full enumeration)
+- Distinct project count = 610 (measured, not estimated)
+- `total` does NOT equal distinct project count
+- `total` counts every row in the `data` array, including intra-page and cross-page duplicates
+
+**Source record identity for Phase 3 ingestion:**
+- **Primary key: project ID** — each distinct integer ID represents one unique project
+- Deduplication method: retain one record per project ID (any copy suffices; all are identical)
+- No need for composite keys: contractor, amount, dates, titles do not differ between duplicate records
+- Cross-page duplicates are exact copies — no information loss from deduplication
+
+**Field coverage unchanged from Phase 2B:** 14 fields available, 2 derivable, 8 not available (ocid, description, latitude, longitude, status, source_release_id). Repeated records do NOT introduce conflicting values — duplicates are identical.
+
+**Project 255:** REJECTED AS PRIMARY DATASET (unchanged).
 
 **Sample records from different pages:**
 

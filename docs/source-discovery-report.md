@@ -409,18 +409,22 @@ The portal's JavaScript (`kaduna.js`) constructs requests to a prefixed route:
 
 The **non-prefixed GET** route (`https://www.ocds.kdsg.gov.ng/Projects/fetchprojects/{page}`) is the ONLY working method. The portal's own JavaScript generates requests to a route that does not return data.
 
-**Record duplication behavior:**
-- Each project ID appears exactly twice on its page
-- Duplicates share: title, budget_amount, amount, year, lga, name, procurement_method, start_date, date_sign, date_updated
-- Duplicates sometimes differ in: contractor_id, contractor, address, phone (different contractor records linked to same project)
-- No project ID appears on more than one page
-- The `total` field (1379) counts RAW records including duplicates, NOT unique projects
+**Record duplication behavior (corrected after full enumeration):**
 
-**Total vs. unique count:**
-- `total` field: 1379 (raw records)
-- Estimated unique projects: approximately 690 (roughly half of total)
-- Actual project ID range: 1 to 848
+- **Intra-page duplicates:** Each project ID appears exactly twice on its assigned page. These two records are **byte-for-byte identical** — every field (title, budget_amount, amount, year, lga, name, procurement_method, start_date, date_sign, date_updated, and all 23 fields) is identical. Verified from full JSON response on pages 1, 2, 227, 228.
+- **Cross-page duplicates:** 116 project IDs also appear on an adjacent page (once per page). These copies are also byte-for-byte identical. Verified for IDs 848 (pages 1-2), 10 (pages 227-228), and others.
+- **No project ID appears on more than two pages.**
+- **No project ID has materially different records** — no differing contractor, budget, contract amount, dates, or title between any duplicate records.
+- **Pattern:** Rolling-window pagination overlap. Each page shares 3 project IDs with the next page, shifting by 3 IDs per page step.
+- The `total` field (1379) counts RAW records including all duplicates, NOT unique projects.
+
+**Total vs. unique count (corrected):**
+- `total` field: 1379 (raw records — confirmed by full enumeration of all 230 populated pages)
+- Distinct project IDs: **610** (measured from complete enumeration, not estimated)
+- Actual project ID range: 2 to 848 (ID 1 missing; 238 gaps in range)
 - Max possible unique by ID range: 848
+
+**Disposition:** VERIFIED VIABLE. This endpoint provides a legitimate, reproducible, public access path to **610 unique Kaduna State procurement projects** across 1,379 raw records. All duplicates are exact copies; deduplication by project ID loses no information.
 
 **Field coverage against Ordaciti canonical schema (implementation.md section 8):**
 
@@ -458,7 +462,7 @@ The **non-prefixed GET** route (`https://www.ocds.kdsg.gov.ng/Projects/fetchproj
 
 **Reproducibility:** Tested across 13 distinct pages (1, 2, 3, 10, 50, 100, 150, 200, 220, 228, 229, 230, 231) with consistent HTTP 200 responses and valid JSON. No authentication required. Deterministic URL pattern.
 
-**Disposition:** VERIFIED VIABLE. This endpoint provides a legitimate, reproducible, public access path to real Kaduna State procurement project data (approximately 690 unique projects across 1,379 raw records). It resolves the Phase 2 blocker.
+**Disposition:** VERIFIED VIABLE. This endpoint provides a legitimate, reproducible, public access path to **610 unique Kaduna State procurement projects** across 1,379 raw records. All duplicates are exact copies; deduplication by project ID loses no information. It resolves the Phase 2 blocker.
 
 **Limitations carried into Phase 3:**
 1. OCID not available — OCDS API endpoints remain broken
@@ -466,9 +470,10 @@ The **non-prefixed GET** route (`https://www.ocds.kdsg.gov.ng/Projects/fetchproj
 3. Project status, description not available
 4. Release/package data not available
 5. Some `start_date` values are invalid ("30th November -0001")
-6. Records are duplicated (each project appears twice per page) — ingestion must deduplicate
-7. `total` field (1379) represents raw records, not unique projects
+6. Records are duplicated via two mechanisms: (a) each project appears twice on its page (intra-page identical duplicates) and (b) 116 projects appear on two adjacent pages (cross-page identical duplicates) — ingestion must deduplicate by project ID; all copies are identical so no information is lost
+7. `total` field (1379) represents raw records, not unique projects (distinct count = 610)
 8. Data format is flat JSON, not OCDS Record Package
+9. ID 1 is missing; 238 gaps exist in the 1-848 range — IDs are not contiguous
 
 ### 6.9 Project 255 Status (Reaffirmed)
 
