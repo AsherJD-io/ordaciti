@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { ArrowRight, Building2, MapPin, FileSearch, Layers, Shield } from 'lucide-react'
-import { evidence, patterns, signals } from '@/lib/data'
+import { evidence, patterns } from '@/lib/data'
 import { Card } from '@/components/Card'
 import { Badge } from '@/components/Badge'
 
@@ -29,15 +29,15 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border/50 bg-background/95 backdrop-blur supports-backdrop-blur:bg-background/60">
+      <header className="border-b border-border/60 bg-white/90 backdrop-blur supports-backdrop-blur:bg-white/80">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
                 <Building2 className="h-5 w-5" />
               </div>
               <div className="flex flex-col">
-                <span className="text-lg font-semibold tracking-tight">Ordaciti</span>
+                <span className="text-lg font-semibold tracking-tight text-foreground">Ordaciti</span>
                 <span className="text-xs text-muted-foreground">Public Decision Intelligence</span>
               </div>
             </div>
@@ -54,13 +54,14 @@ export default function Home() {
       </header>
 
       {/* Hero */}
-      <section className="border-b border-border/50 bg-background">
-        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
+      <section className="relative overflow-hidden bg-hero-gradient border-b border-border/60">
+        <div className="absolute inset-0 bg-grid-subtle opacity-30" />
+        <div className="relative mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
           <div className="max-w-3xl">
             <Badge variant="primary" size="md" className="mb-6">
               610 projects analysed
             </Badge>
-            <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+            <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl leading-[1.1]">
               Government projects are not isolated transactions.
             </h1>
             <p className="mt-6 text-lg text-muted-foreground leading-relaxed max-w-2xl">
@@ -71,7 +72,7 @@ export default function Home() {
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link
                 href="/projects"
-                className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 Explore projects
                 <ArrowRight className="h-4 w-4" />
@@ -85,23 +86,23 @@ export default function Home() {
       </section>
 
       {/* Key figures */}
-      <section className="border-b border-border/50 bg-background">
-        <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <Card className="p-5">
-              <div className="text-3xl font-bold tracking-tight">{projectCount.toLocaleString()}</div>
+      <section className="border-b border-border/60 bg-white">
+        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Card elevated className="p-5">
+              <div className="text-3xl font-bold tracking-tight text-foreground">{projectCount.toLocaleString()}</div>
               <div className="mt-1 text-sm text-muted-foreground">Projects analysed</div>
             </Card>
-            <Card className="p-5">
-              <div className="text-3xl font-bold tracking-tight">{clusterCount}</div>
+            <Card elevated className="p-5">
+              <div className="text-3xl font-bold tracking-tight text-foreground">{clusterCount}</div>
               <div className="mt-1 text-sm text-muted-foreground">Related project clusters</div>
             </Card>
-            <Card className="p-5">
-              <div className="text-3xl font-bold tracking-tight">{singletonCount}</div>
+            <Card elevated className="p-5">
+              <div className="text-3xl font-bold tracking-tight text-foreground">{singletonCount}</div>
               <div className="mt-1 text-sm text-muted-foreground">Projects without detected links</div>
             </Card>
-            <Card className="p-5">
-              <div className="text-3xl font-bold tracking-tight">{repeatCount + contractorCount + evidenceGapCount}</div>
+            <Card elevated className="p-5">
+              <div className="text-3xl font-bold tracking-tight text-foreground">{repeatCount + contractorCount + evidenceGapCount}</div>
               <div className="mt-1 text-sm text-muted-foreground">Intelligence signals detected</div>
             </Card>
           </div>
@@ -109,23 +110,23 @@ export default function Home() {
       </section>
 
       {/* Intelligence signals */}
-      <section className="border-b border-border/50 bg-background">
+      <section className="border-b border-border/60 bg-background">
         <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
           <div className="mb-8">
-            <h2 className="text-xl font-semibold tracking-tight">Intelligence signals</h2>
+            <h2 className="text-xl font-semibold tracking-tight text-foreground">Intelligence signals</h2>
             <p className="mt-2 text-muted-foreground">
               Ordaciti surfaces observable patterns from the available evidence — without making judgements.
             </p>
           </div>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            <Card hover>
-              <div className="flex items-start gap-4 p-1">
+            <Card hover className="signal-repeat">
+              <div className="flex items-start gap-4">
                 <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-50">
                   <Layers className="h-5 w-5 text-amber-600" />
                 </div>
                 <div className="min-w-0">
                   <h3 className="font-semibold text-foreground">Repeat interventions</h3>
-                  <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
+                  <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">
                     Projects cluster around recurring interventions in the same location and sector — flagging potential program patterns for review.
                   </p>
                   <div className="mt-3 flex items-center gap-2">
@@ -134,14 +135,14 @@ export default function Home() {
                 </div>
               </div>
             </Card>
-            <Card hover>
-              <div className="flex items-start gap-4 p-1">
+            <Card hover className="signal-contractor">
+              <div className="flex items-start gap-4">
                 <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50">
                   <FileSearch className="h-5 w-5 text-blue-600" />
                 </div>
                 <div className="min-w-0">
                   <h3 className="font-semibold text-foreground">Contractor recurrence</h3>
-                  <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
+                  <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">
                     Identifies contractors appearing across multiple projects — useful for understanding procurement patterns.
                   </p>
                   <div className="mt-3 flex items-center gap-2">
@@ -150,14 +151,14 @@ export default function Home() {
                 </div>
               </div>
             </Card>
-            <Card hover>
-              <div className="flex items-start gap-4 p-1">
+            <Card hover className="signal-evidence">
+              <div className="flex items-start gap-4">
                 <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-red-50">
                   <Shield className="h-5 w-5 text-red-500" />
                 </div>
                 <div className="min-w-0">
                   <h3 className="font-semibold text-foreground">Evidence gaps</h3>
-                  <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
+                  <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">
                     Maps the project lifecycle against available evidence — highlighting where documentation is thin or absent.
                   </p>
                   <div className="mt-3 flex items-center gap-2">
@@ -171,10 +172,10 @@ export default function Home() {
       </section>
 
       {/* Principles */}
-      <section className="border-b border-border/50 bg-background">
+      <section className="border-b border-border/60 bg-white">
         <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
           <div className="mb-8">
-            <h2 className="text-xl font-semibold tracking-tight">How Ordaciti works</h2>
+            <h2 className="text-xl font-semibold tracking-tight text-foreground">How Ordaciti works</h2>
           </div>
           <div className="grid gap-5 lg:grid-cols-3">
             <Card>
@@ -227,14 +228,14 @@ export default function Home() {
       </section>
 
       {/* Evidence gaps */}
-      <section className="border-b border-border/50 bg-background">
+      <section className="border-b border-border/60 bg-section-subtle">
         <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
-          <div className="rounded-lg border border-border bg-card p-6 sm:p-8">
-            <h2 className="text-lg font-semibold tracking-tight">What is missing matters</h2>
+          <div className="rounded-lg border-l-4 border-l-amber-500 bg-white p-6 sm:p-8 shadow-card">
+            <h2 className="text-lg font-semibold tracking-tight text-foreground">What is missing matters</h2>
             <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
               Across the {projectCount.toLocaleString()} projects analysed, most lack implementation-stage
               evidence: completion reports, payment records, and photographs are not available
-              in the retrieved source data. This does not mean those activities did not happen — 
+              in the retrieved source data. This does not mean those activities did not happen —
               it means the available public records do not show them.
             </p>
             <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
@@ -247,11 +248,11 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border/50 bg-background py-8">
+      <footer className="border-t border-border/60 bg-white py-8">
         <div className="mx-auto max-w-6xl px-4 text-center sm:text-left">
           <div className="flex flex-col gap-2 sm:flex-row sm:justify-between">
             <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
                 <Building2 className="h-4 w-4" />
               </div>
               <span className="text-sm font-medium text-foreground">Ordaciti</span>

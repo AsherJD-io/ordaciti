@@ -6,18 +6,24 @@ interface CardProps {
   hover?: boolean
   interactive?: boolean
   onClick?: () => void
+  elevated?: boolean
 }
 
-export function Card({ children, className = '', hover = false, interactive = false, onClick }: CardProps) {
+export function Card({ children, className = '', hover = false, interactive = false, onClick, elevated = false }: CardProps) {
   const baseClasses = 'rounded-lg border border-border bg-card text-card-foreground'
-  const hoverClasses = hover ? 'transition-colors hover:border-primary/40' : ''
+  const shadowClasses = elevated
+    ? 'shadow-card'
+    : ''
+  const hoverClasses = hover
+    ? 'transition-card hover:shadow-card-hover hover:border-primary/40 hover:-translate-y-0.5'
+    : 'transition-card'
   const interactiveClasses = interactive
     ? 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
     : ''
 
   return (
     <div
-      className={[baseClasses, hoverClasses, interactiveClasses, className].join(' ')}
+      className={[baseClasses, shadowClasses, hoverClasses, interactiveClasses, className].join(' ')}
       onClick={onClick}
       role={interactive ? 'button' : undefined}
       tabIndex={interactive ? 0 : undefined}
@@ -28,11 +34,11 @@ export function Card({ children, className = '', hover = false, interactive = fa
 }
 
 export function CardHeader({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  return <div className={['pb-3', className].join(' ')}>{children}</div>
+  return <div className={['pb-4', className].join(' ')}>{children}</div>
 }
 
 export function CardTitle({ children, className = '', as: Tag = 'h3' }: { children: React.ReactNode; className?: string; as?: keyof JSX.IntrinsicElements }) {
-  return <Tag className={['text-base font-semibold tracking-tight', className].join(' ')}>{children}</Tag>
+  return <Tag className={['text-lg font-semibold tracking-tight', className].join(' ')}>{children}</Tag>
 }
 
 export function CardDescription({ children, className = '' }: { children: React.ReactNode; className?: string }) {
@@ -40,9 +46,9 @@ export function CardDescription({ children, className = '' }: { children: React.
 }
 
 export function CardContent({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  return <div className={['pt-3', className].join(' ')}>{children}</div>
+  return <div className={['pt-4', className].join(' ')}>{children}</div>
 }
 
 export function CardFooter({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  return <div className={['pt-3 border-t border-border', className].join(' ')}>{children}</div>
+  return <div className={['pt-4 border-t border-border', className].join(' ')}>{children}</div>
 }

@@ -40,12 +40,10 @@ export default function ProjectsPage() {
   const hasActiveFilters = filters.query || filters.lga !== 'all' || filters.sector !== 'all' ||
     filters.mda !== 'all' || filters.hasSignals !== null
 
-  const SortIcon = filters.sortDir === 'asc' ? ArrowUp : ArrowDown
-
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-10 border-b border-border/50 bg-background/95 backdrop-blur supports-backdrop-blur:bg-background/60">
+      <header className="sticky top-0 z-10 border-b border-border/60 bg-white/90 backdrop-blur supports-backdrop-blur:bg-white/80">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-14 items-center justify-between">
             <Breadcrumb href="/" label="Back to home" />
@@ -59,7 +57,7 @@ export default function ProjectsPage() {
 
       <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Page header */}
-        <div className="mb-8">
+        <div className="mb-6">
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Project Explorer</h1>
           <p className="mt-1 text-muted-foreground">
             Browse {allProjects.length.toLocaleString()} government projects with evidence analysis
@@ -74,7 +72,7 @@ export default function ProjectsPage() {
             <input
               type="search"
               placeholder="Search by project ID, title, LGA, sector, or MDA..."
-              className="w-full rounded-lg border border-border bg-background pl-10 pr-4 py-2.5 text-sm placeholder:text-muted-foreground/60 focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/50 transition-colors"
+              className="w-full rounded-lg border border-border bg-white pl-10 pr-4 py-2.5 text-sm placeholder:text-muted-foreground/60 focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/50 transition-colors shadow-sm"
               value={filters.query}
               onChange={e => update('query', e.target.value)}
             />
@@ -87,7 +85,7 @@ export default function ProjectsPage() {
               <div className="relative">
                 <Filter className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground pointer-events-none" />
                 <select
-                  className="w-full rounded-lg border border-border bg-background pl-8 pr-8 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/50 transition-colors appearance-none cursor-pointer"
+                  className="w-full rounded-lg border border-border bg-white pl-8 pr-8 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/50 transition-colors appearance-none cursor-pointer shadow-sm"
                   value={filters.lga}
                   onChange={e => update('lga', e.target.value)}
                 >
@@ -104,7 +102,7 @@ export default function ProjectsPage() {
               <div className="relative">
                 <Filter className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground pointer-events-none" />
                 <select
-                  className="w-full rounded-lg border border-border bg-background pl-8 pr-8 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/50 transition-colors appearance-none cursor-pointer"
+                  className="w-full rounded-lg border border-border bg-white pl-8 pr-8 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/50 transition-colors appearance-none cursor-pointer shadow-sm"
                   value={filters.sector}
                   onChange={e => update('sector', e.target.value)}
                 >
@@ -121,7 +119,7 @@ export default function ProjectsPage() {
               <div className="relative">
                 <Filter className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground pointer-events-none" />
                 <select
-                  className="w-full rounded-lg border border-border bg-background pl-8 pr-8 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/50 transition-colors appearance-none cursor-pointer"
+                  className="w-full rounded-lg border border-border bg-white pl-8 pr-8 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/50 transition-colors appearance-none cursor-pointer shadow-sm"
                   value={filters.mda}
                   onChange={e => update('mda', e.target.value)}
                 >
@@ -138,7 +136,7 @@ export default function ProjectsPage() {
               <div className="relative">
                 <Filter className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground pointer-events-none" />
                 <select
-                  className="w-full rounded-lg border border-border bg-background pl-8 pr-8 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/50 transition-colors appearance-none cursor-pointer"
+                  className="w-full rounded-lg border border-border bg-white pl-8 pr-8 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/50 transition-colors appearance-none cursor-pointer shadow-sm"
                   value={filters.hasSignals === null ? 'all' : filters.hasSignals ? 'yes' : 'no'}
                   onChange={e => update('hasSignals', e.target.value === 'yes' ? true : e.target.value === 'no' ? false : null)}
                 >
@@ -155,7 +153,7 @@ export default function ProjectsPage() {
           </div>
 
           {/* Sort controls */}
-          <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-card p-3">
+          <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-card p-3 shadow-sm">
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium text-foreground">Sort:</span>
               <select
@@ -222,11 +220,11 @@ export default function ProjectsPage() {
               <Link
                 key={project.project_id}
                 href={`/projects/${project.project_id}`}
-                className="group block rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary/40 hover:bg-card/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="group block rounded-lg border border-border bg-card p-4 transition-card hover:shadow-card-hover hover:border-primary/40 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between gap-4">
                   <div className="min-w-0">
-                    <div className="flex items-center gap-2 mb-1.5">
+                    <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                       <Badge variant="muted">#{project.project_id}</Badge>
                       {project.has_signals && (
                         <Badge variant="primary">
