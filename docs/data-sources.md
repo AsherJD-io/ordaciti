@@ -20,7 +20,26 @@
 
 **Data used:** OCDS project records, release packages, contract-level data
 
-**Status:** Portal accessible; API endpoints returning HTTP 500. Web interface renders 0 projects (AJAX endpoint broken). Data confirmed present (portal displays aggregate statistics: 1,379 projects, ₦95.6B total contract sum) but programmatic retrieval is not possible. Newer OC4IDS backend (Cloud Run) requires API token for programmatic access; OC4IDS portal now suspended (redirects to suspendedpage.cgi, shows 0 projects). Previous Azure deployment (kadppaocds.azurewebsites.net) is defunct (HTTP 000).
+**Status:** Portal accessible; API endpoints returning HTTP 500. Web interface renders 0 projects (AJAX endpoint broken). Data confirmed present (portal displays aggregate statistics: 1,379 projects, ₦95.6B total contract sum).
+
+**2026-09-19 Phase 2B discovery — working data endpoint found:**
+
+A working public JSON endpoint was discovered at `https://www.ocds.kdsg.gov.ng/Projects/fetchprojects/{page}` via analysis of the portal's JavaScript (`kaduna.js`).
+
+- **Endpoint:** `https://www.ocds.kdsg.gov.ng/Projects/fetchprojects/{page_number}`
+- **Method:** GET (non-prefixed route is the ONLY working method)
+- **Status:** VERIFIED VIABLE — returns valid JSON with project records
+- **Pagination:** ~230 pages, 6 records per page, data ordered by project ID descending
+- **Record count:** `total` field reports 1379 raw records (includes duplicates). Estimated ~690 unique projects (IDs range 1-848).
+- **Record duplication:** Each project ID appears twice per page. Duplicates sometimes have different contractor details.
+- **Content-Type:** Server returns `text/html` but body is valid JSON (misconfiguration).
+- **Request-method discrepancy:** The portal's JavaScript (`kaduna.js`) uses POST to a `/kadppa/` prefixed route, but that prefixed route returns HTML, not JSON. Only the non-prefixed GET route works.
+- **OCDS API endpoints:** `/api/record/{id}` and `/api/releases/{id}` remain HTTP 500.
+- **Project detail pages:** `/Project/{id}` accessible but contain only title + feedback form.
+
+**Field coverage (14 available, 2 derivable, 8 not available):** project_id, title, mda, sector, lga, procurement_method, budget_year, budget_amount, contract_amount, date_of_advert, date_of_award, contractor, source_updated_at available. ocid, description, latitude, longitude, status, source_release_id NOT available. source_url and retrieved_at derivable.
+
+**Newer OC4IDS backend (Cloud Run) requires API token for programmatic access; OC4IDS portal now suspended (redirects to suspendedpage.cgi, shows 0 projects). Previous Azure deployment (kadppaocds.azurewebsites.net) is defunct (HTTP 000).**
 
 **Coverage:** Kaduna State, Nigeria. Approximately 1,379+ projects registered on the OCDS portal (per aggregate statistics). The newer OC4IDS portal reported 1,635 published projects (as of late 2025), with 393 having coordinates — but this portal is now suspended.
 

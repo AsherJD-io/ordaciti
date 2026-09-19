@@ -338,4 +338,142 @@ Project 255 artifacts are preserved as investigation evidence only:
 
 ---
 
-*End of Phase 2 report — updated 2026-09-19.*
+## 6. Phase 2B — Server-rendered `/Projects` Route Verification (2026-09-19)
+
+### 6.8 Working Data Endpoint Discovery — `Projects/fetchprojects/{page}`
+
+**URL:** `https://www.ocds.kdsg.gov.ng/Projects/fetchprojects/{page_number}`
+**Method:** GET
+**Status:** VERIFIED VIABLE — programmatic access to Kaduna State project inventory confirmed
+
+**Discovery:** This endpoint was discovered through analysis of the portal's JavaScript file `https://www.ocds.kdsg.gov.ng/js/kaduna.js`, which reveals an infinite-scroll pagination mechanism.
+
+**Working request:**
+```bash
+curl https://www.ocds.kdsg.gov.ng/Projects/fetchprojects/1
+```
+
+**Response (truncated):**
+```json
+{
+  "sum": "95663978669.04",
+  "total": "1379",
+  "highest": "4284000000.00",
+  "lowest": "21000.00",
+  "status": "success",
+  "data": [
+    {
+      "title": "Renovation/Landscapping of Health Clinic at Ruhogi",
+      "project_category": "N/A",
+      "date_updated": "3rd September 2020",
+      "year": "2019",
+      "id": "848",
+      "lga": "Igabi",
+      "short_name": "Igabi LGA",
+      "name": "Igabi Local Government Area Council",
+      "budget_amount": "7,000,000.00",
+      "period": "N/A",
+      "amount": "6,744,159.19",
+      "date_sign": "2019-05-15",
+      "award_date": "N/A",
+      "award_criteria": "NCT-Single Source",
+      "category": "Works",
+      "procurement_method": "Single Source Award",
+      "start_date": "2019-05-05",
+      "bid_open_start": "30th November -0001",
+      "contractor_id": "365",
+      "contractor": "Ziarum Partners Nig. LTD",
+      "address": "No. 65 Isa Kaita Road, Kaduna",
+      "phone": "08036277516",
+      "email": "salehrabiu4@gmail.com"
+    },
+    ...
+  ]
+}
+```
+
+**Pagination:** Approximately 230 pages (pages 1-230 contain data; page 231 is empty). Each page returns up to 6 records. Data is ordered by project ID descending.
+
+**Content-Type discrepancy:** The server returns `Content-Type: text/html` but the body is valid JSON. This is a server misconfiguration and does not affect data usability.
+
+**Important — request method discrepancy with portal JavaScript:**
+
+The portal's JavaScript (`kaduna.js`) constructs requests to a prefixed route:
+- JavaScript ABS_PATH: `https://www.ocds.kdsg.gov.ng/kadppa/`
+- JavaScript request URL: `https://www.ocds.kdsg.gov.ng/kadppa/Projects/fetchprojects/{page}`
+- JavaScript method: POST with JSON payload
+
+**The prefixed route does NOT return usable data.** Testing confirmed:
+- GET on prefixed route: Returns HTML homepage
+- POST on prefixed route (with any payload): Returns HTML homepage
+
+The **non-prefixed GET** route (`https://www.ocds.kdsg.gov.ng/Projects/fetchprojects/{page}`) is the ONLY working method. The portal's own JavaScript generates requests to a route that does not return data.
+
+**Record duplication behavior:**
+- Each project ID appears exactly twice on its page
+- Duplicates share: title, budget_amount, amount, year, lga, name, procurement_method, start_date, date_sign, date_updated
+- Duplicates sometimes differ in: contractor_id, contractor, address, phone (different contractor records linked to same project)
+- No project ID appears on more than one page
+- The `total` field (1379) counts RAW records including duplicates, NOT unique projects
+
+**Total vs. unique count:**
+- `total` field: 1379 (raw records)
+- Estimated unique projects: approximately 690 (roughly half of total)
+- Actual project ID range: 1 to 848
+- Max possible unique by ID range: 848
+
+**Field coverage against Ordaciti canonical schema (implementation.md section 8):**
+
+| Field | Status | Source |
+|---|---|---|
+| project_id | AVAILABLE | `id` |
+| ocid | NOT AVAILABLE | — |
+| title | AVAILABLE | `title` |
+| description | NOT AVAILABLE | — |
+| mda | AVAILABLE | `name` |
+| sector | AVAILABLE | `category` |
+| category | PARTIAL | `project_category` (always "N/A") |
+| lga | AVAILABLE | `lga` |
+| location_text | AVAILABLE | `address` (contractor address, not project site) |
+| latitude | NOT AVAILABLE | — |
+| longitude | NOT AVAILABLE | — |
+| procurement_method | AVAILABLE | `procurement_method` |
+| budget_year | AVAILABLE | `year` |
+| budget_amount | AVAILABLE | `budget_amount` |
+| contract_amount | AVAILABLE | `amount` |
+| date_of_advert | AVAILABLE | `start_date` (some invalid values) |
+| date_of_award | AVAILABLE | `date_sign` |
+| contractor | AVAILABLE | `contractor` |
+| status | NOT AVAILABLE | — |
+| source_url | DERIVABLE | `https://www.ocds.kdsg.gov.ng/Project/{id}` |
+| source_release_id | NOT AVAILABLE | — |
+| source_updated_at | AVAILABLE | `date_updated` |
+| retrieved_at | DERIVABLE | At ingestion time |
+
+**14 fields directly available, 2 derivable, 8 not available.** Most critical missing: OCID, coordinates, status, description.
+
+**Project detail pages** (`https://www.ocds.kdsg.gov.ng/Project/{id}`) are accessible (HTTP 200) but contain only the project title and a citizen feedback form — not the full procurement data.
+
+**OCDS API endpoints remain broken:** `/api/record/{id}` and `/api/releases/{id}` return HTTP 500 even when tested with valid project IDs from the working endpoint.
+
+**Reproducibility:** Tested across 13 distinct pages (1, 2, 3, 10, 50, 100, 150, 200, 220, 228, 229, 230, 231) with consistent HTTP 200 responses and valid JSON. No authentication required. Deterministic URL pattern.
+
+**Disposition:** VERIFIED VIABLE. This endpoint provides a legitimate, reproducible, public access path to real Kaduna State procurement project data (approximately 690 unique projects across 1,379 raw records). It resolves the Phase 2 blocker.
+
+**Limitations carried into Phase 3:**
+1. OCID not available — OCDS API endpoints remain broken
+2. Coordinates not available
+3. Project status, description not available
+4. Release/package data not available
+5. Some `start_date` values are invalid ("30th November -0001")
+6. Records are duplicated (each project appears twice per page) — ingestion must deduplicate
+7. `total` field (1379) represents raw records, not unique projects
+8. Data format is flat JSON, not OCDS Record Package
+
+### 6.9 Project 255 Status (Reaffirmed)
+
+Project 255 remains **REJECTED** as the primary Ordaciti dataset. See section 9 (unchanged).
+
+---
+
+*End of Phase 2 report — updated 2026-09-19 with Phase 2B findings.*

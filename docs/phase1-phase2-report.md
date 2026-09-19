@@ -359,23 +359,9 @@ Unknown. The portal supports multiple release types (planning, tender, award, co
 
 The implementation.md section 63 rules state: "Verify external APIs/endpoints before implementation" and "Never fabricate data." Proceeding to Phase 3 without a working data source would violate these rules.
 
-**2026-09-19 Follow-up Investigation Result:** A full source-access recovery investigation was conducted on 2026-09-19. All documented OCDS and OC4IDS endpoints were re-verified and confirmed non-functional. Seven additional access paths were investigated:
+**2026-09-19 Follow-up Investigation Result:** A full source-access recovery investigation was conducted on 2026-09-19. All documented OCDS and OC4IDS endpoints were re-verified and confirmed non-functional. Seven additional access paths were investigated. **A new working endpoint was discovered: `https://www.ocds.kdsg.gov.ng/Projects/fetchprojects/{page}`.** This endpoint provides programmatic access to approximately 690 unique Kaduna State procurement projects (1,379 raw records including duplicates). See Phase 2B documentation in `docs/progress.md` for full details.
 
-1. **Azure OCDS Portal (kadppaocds.azurewebsites.net):** HTTP 000 — server unreachable. This was the original OCDS portal referenced in OGP KAD0002 IRM report. Now defunct.
-
-2. **NOCOPO (nocopo.bpp.gov.ng):** HTTP 000 — connection failure. Federal procurement portal, unreachable from this environment.
-
-3. **openAFRICA (open.africa):** HTTP 000 — connection failure. API unreachable.
-
-4. **OCP Data Registry (registry.open-contracting.org):** HTTP 000 — connection failure. API unreachable.
-
-5. **HDX (data.humdata.org):** Reachable but returned 0 results for "Kaduna procurement" query. No Kaduna procurement datasets found.
-
-6. **GitHub (github.com):** Web search found no repositories containing actual Kaduna procurement OCDS/OC4IDS data. Only sample data, tooling, and documentation repositories exist.
-
-7. **OC4IDS Portal Current Status (ipdata.kdsg.gov.ng):** Portal now returns 302 redirect to suspendedpage.cgi. Open-data page shows 0 infrastructure projects. The portal that launched December 2025 with 1,635 projects is suspended.
-
-**Conclusion:** No viable primary source found. The remaining access blocker is unchanged and has been further documented. See docs/progress.md section "Phase 2 Source-Access Recovery Investigation (2026-09-19)" and docs/source-discovery-report.md sections 6-9 for full details.
+**Conclusion:** The Phase 2 blocker is RESOLVED. A viable primary data source is available. Phase 3 is ready to begin but must NOT be started in this task.
 
 ---
 
