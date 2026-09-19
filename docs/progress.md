@@ -1620,9 +1620,115 @@ Build a Next.js frontend that renders the 610 Kaduna projects, their evidence, s
 
 ## Phase 9 — Context Enrichment
 
-**Status:** NOT STARTED
+**Status:** COMPLETE
+
+**Date:** 2026-09-19
+
+**Commit:** 308f158 — `phase 9: add population and LGA context enrichment`
+
+### Objective
+
+Add population and geographic context per implementation.md section 17 (allocation context) and section 21 (evidence model). Associate Kaduna State LGA population data from a real external source with project allocation signals and evidence objects.
+
+### Implemented
+
+#### Population data (`data/processed/population.json`)
+- Source: WorldPop — `NGA_population_v1_0_admin_level3.csv`
+- URL: `https://data.worldpop.org/repo/wopr/NGA/population/v1.0/NGA_population_v1_0_admin.zip`
+- Reference year: 2020
+- Method: Bottom-up gridded population estimates, UN adjusted
+- License: CC BY 4.0
+- Coverage: 23 Kaduna State LGAs with mean population estimates
+- Total Kaduna State population (sum of LGA estimates): 8,623,417
+- Provenance metadata: source, URL, year, method, license, retrieval date
+
+#### Enrichment script (`scripts/enrich_population.py`)
+- Deterministic pipeline: maps project LGA values to canonical Kaduna LGAs
+- Rebuilds ALLOCATION_CONTEXT signals with population where available
+- Updates all 610 evidence objects with `lga_population` context
+- Handles non-standard LGA values (institution names, descriptions, Null) — population stays unavailable
+
+#### ALLOCATION_CONTEXT signals
+- 22 canonical LGA signals (was 278 raw signals, now rebuilt for canonical LGAs only)
+- 21 LGAs have both project data and WorldPop population:
+  - Igabi: 34 projects, N5.41B recorded, pop 829,459, ₦652.76M per 100k
+  - Zaria: 25 projects, N674.80M recorded, pop 566,182, ₦119.18M per 100k
+  - Lere: 6 projects, N1.53B recorded, pop 558,090, ₦273.43M per 100k
+  - And 18 more LGAs
+- 1 LGA (Jema'a) has projects but no matching WorldPop entry (name casing mismatch) — population unavailable
+- 419 projects have non-standard LGA values (e.g. "Dmsma", "12 Schools", "Null") — not mappable to canonical LGAs
+
+#### Evidence objects
+- 610/610 evidence objects updated with `context.lga_population`
+- 186 with population data and value_per_100k_population
+- 5 with canonical LGA but no WorldPop match
+- 419 without mappable LGA
+
+### Coverage
+
+| Metric | Value |
+|---|---|
+| Kaduna LGAs in WorldPop | 23 |
+| Canonical LGAs recognised | 23 |
+| Projects with mappable LGA | 191 / 610 |
+| Projects without mappable LGA | 419 |
+| LGAs with both projects and population | 21 |
+| Total recorded value covered | N20,570,155,556.66 |
+| Total population covered | 8,006,507 |
+
+### Validation
+
+**Deterministic:** Two runs produce identical MD5 hashes for both signals.json and evidence.json.
+
+**No fabrication:**
+- All 21 population values are integers sourced from WorldPop
+- Population values > 0 verified
+- No invented values anywhere
+
+**Unavailable preserved:**
+- Jema'a: LGA recognised but no WorldPop match → population null, noted
+- 419 projects with non-standard LGA → population unavailable, noted
+- Non-LGA groupings from previous signals retained as-is
+
+**Provenance:**
+- Every population value traceable to WorldPop source
+- Source URL, reference year, method, license documented in population.json
+
+**Project ID integrity:**
+- All 610 evidence project IDs match normalized_projects.json
+
+### Limitations
+
+- 419/610 projects (68.7%) have non-standard LGA values that cannot be mapped to canonical Kaduna LGAs. These are institution names, descriptions, facility names, or Null — not LGAs. Population context unavailable for these.
+- Jema'a LGA: WorldPop uses "Jema'A" (capital A); Ordaciti normalised to "Jema'a" (lowercase a). Case mismatch prevents automatic matching. Population available but not linked.
+- WorldPop reference year is 2020. Project data spans multiple years (2013-2020+). Population is a point estimate, not year-matched.
+- No coordinates in project data — geographic proximity analysis not possible.
+- Population is one context layer only. Does not imply budget adequacy or misallocation.
+
+### Files Created
+- `scripts/enrich_population.py` — Phase 9 enrichment pipeline (288 lines)
+- `data/processed/population.json` — WorldPop LGA population data with provenance
+
+### Files Modified
+- `data/processed/signals.json` — ALLOCATION_CONTEXT signals rebuilt with population
+- `data/processed/evidence.json` — 610 evidence objects updated with lga_population context
+
+### Files Unchanged
+- `implementation.md` — untouched
+- `data/processed/normalized_projects.json` — untouched (original project data preserved)
+- `data/processed/patterns.json` — untouched
+- `docs/progress.md` — Phase 9 section updated only
+
+### Git
+**Commit:** 308f158  
+**Message:** `phase 9: add population and LGA context enrichment`  
+**Repository status:** CLEAN
 
 ---
+
+## Phase 10 — AI
+
+**Status:** NOT STARTED
 
 ## Phase 10 — AI
 
