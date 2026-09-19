@@ -691,63 +691,67 @@ The endpoint is: `https://www.ocds.kdsg.gov.ng/Projects/fetchprojects/{page_numb
 
 Arithmetic verification: 5 × 1 + 523 × 2 + 82 × 4 = 5 + 1046 + 328 = 1379 ✓
 
-**Duplicate structure (two distinct mechanisms):**
+**Duplicate structure (reconciled — four mutually exclusive categories):**
 
-The previous report incorrectly described a single "intra-page twice + cross-page once" pattern. The actual data reveals three multiplicity levels:
+The previous report contained a contradiction: it stated all 523 multiplicity-2 IDs were intra-page only, but also that 116 IDs were cross-page. The actual classification resolves this:
 
-**A. Multiplicity-2 IDs (523 IDs, 85.7%):**
-- Appear exactly twice, both occurrences on the same page
-- These are intra-page duplicates only — no cross-page presence
-- The two records are byte-for-byte identical (verified for sample IDs: 848, 847, 846, 10, 133)
+| Category | Count | Definition |
+|----------|-------|------------|
+| A. SINGLETON | 5 | 1 page, 1 occurrence |
+| B. INTRA_PAGE_ONLY | 462 | 1 page, 2 identical occurrences |
+| C. INTRA_PAGE_ONLY (mult-4) | 27 | 1 page, 4 occurrences (2 contractors) |
+| D. CROSS_PAGE_ONLY | 61 | 2 adjacent pages, 1 occurrence each |
+| E. BOTH (mult-4) | 55 | 2 adjacent pages, 3+1 or 1+3 pattern |
 
-**B. Multiplicity-4 IDs (82 IDs, 13.4%):**
-- Appear 4 times across exactly 2 adjacent pages
-- Pattern: 3 occurrences on one page + 1 occurrence on the adjacent page
-- 71 IDs follow "3x on page N, 1x on page N+1" pattern
-- 11 IDs follow "1x on page N, 3x on page N+1" pattern
-- These IDs appear in the transition zone between pages with 3-distinct and 2-distinct ID counts
+**Multiplicity-2 IDs (523 total):**
+- 462 are intra-page only: 2 identical copies on same page, 1 contractor
+- 61 are cross-page only: 1 copy on each of 2 adjacent pages, 1 contractor
+- **The previous report was WRONG to claim all 523 were intra-page only. 61 are cross-page.**
 
-**C. Multiplicity-1 IDs (5 IDs, 0.8%):**
-- Appear exactly once, on one page only
+**Multiplicity-4 IDs (82 total):**
+- 27 are intra-page only: 4 copies on 1 page, 2 contractors (2+2 pattern)
+- 55 are cross-page: 3 copies on one page + 1 on adjacent page, 2 contractors
 
-**Cross-page overlap analysis:**
-- 116 IDs appear on 2 adjacent pages (overlap of exactly 1 ID between page N and N+1)
-- 0 IDs appear on non-adjacent pages
-- 0 IDs appear on more than 2 pages
-- Overlap size between consecutive pages: 116 transitions have overlap of 1; all other transitions have overlap of 0
+**Cross-page IDs (116 total):**
+- 61 multiplicity-2 crosses: 1 occ/page × 2 pages, identical records, 1 contractor
+- 55 multiplicity-4 crosses: 3+1 or 1+3 pattern, 2 different contractors
+- Each cross-page ID corresponds to exactly 1 adjacent page transition with overlap size 1
+- 116 overlapping transitions × 1 ID each = 116 cross-page IDs (one-to-one mapping)
+
+**Page overlap distribution:**
+- 116 adjacent page transitions have overlap of exactly 1 ID
+- 114 adjacent page transitions have overlap of 0 IDs
+- No transition has overlap > 1
+- Every cross-page ID comes from exactly 1 unique overlapping transition
 
 **Record equality (verified for ALL 605 repeated ID groups):**
 
-| Category | Count | Details |
-|----------|-------|---------|
-| Identical duplicate groups | 523 | All records byte-for-byte identical |
-| Differing duplicate groups | 82 | Differ ONLY in contractor-related fields |
+| Category | Count | Identical | Differing | Differing fields |
+|----------|-------|-----------|-----------|------------------|
+| Intra-page only (mult-2) | 462 | 462 | 0 | — |
+| Intra-page only (mult-4) | 27 | 0 | 27 | contractor_id, contractor, address, phone, email |
+| Cross-page only (mult-2) | 61 | 61 | 0 | — |
+| Both (mult-4) | 55 | 0 | 55 | contractor_id, contractor, address, phone, email |
+| **TOTAL** | **605** | **523** | **82** | **contractor fields only** |
 
-**Differing fields (82 groups, all contractor-related):**
-
-| Field | Groups affected |
-|-------|----------------|
-| contractor_id | 82 |
-| contractor | 82 |
-| address | 82 |
-| phone | 82 |
-| email | 60 |
-
-**Fields that NEVER differ between duplicates:**
-- title, budget_amount, amount (contract_amount), date_sign, award_date, name (MDA), lga, procurement_method, start_date, year, project_category, category, period, bid_open_start, awarded_criteria — all identical across all records for the same project ID
-
-**No project ID has different titles, budget amounts, contract amounts, dates, MDAs, LGAs, or procurement methods.** The only variation is in contractor identity.
+**Fields that NEVER differ:** title, budget_amount, amount, date_sign, award_date, name (MDA), lga, procurement_method, start_date, year, project_category, category, period, bid_open_start, award_criteria — all identical for every record sharing a project ID.
 
 **Source record identity for Phase 3 ingestion:**
 
-The correct source-level entity is a **composite of project ID + contractor** (or equivalently, project ID with contractor fields stored as a list). Each project ID represents one procurement project but may have multiple contractors. The non-contractor fields are identical across all records for a given project ID, so no information is lost by grouping by project ID alone for non-contractor analysis.
+The correct source-level entity model is:
 
-**Total field reconciliation:**
-- Endpoint `total` = 1379 (constant across all pages)
-- Sum of page raw counts = 1379 (independently verified: 229 × 6 + 1 × 5 = 1379)
-- Measured distinct IDs = 610
-- Endpoint `total` EQUALS raw record count, NOT distinct count
-- Arithmetic: 5 × 1 + 523 × 2 + 82 × 4 = 1379 ✓
+- **PROJECT**: identified by `project_id` (610 unique procurement projects)
+- **CONTRACTOR ASSOCIATION**: a child/repeated relationship under project — each project has 1-2 contractors
+- For the 523 multiplicity-2 projects: 1 contractor, records are identical duplicates (lossless to deduplicate)
+- For the 82 multiplicity-4 projects: 2 contractors, non-contractor fields are identical across all records
+
+**Ingestion recommendation:**
+- Group records by `project_id`
+- Within each project group, non-contractor fields collapse to a single value (deterministic, no ambiguity)
+- Contractor fields: retain as list/array OR use `project_id + contractor_id` as composite record key
+- For non-contractor analysis: project_id deduplication is lossless
+- The 61 cross-page multiplicity-2 IDs are simple duplicates (1 contractor, identical records on 2 pages) — deduplicate by keeping one copy
+- The 55 cross-page multiplicity-4 IDs have 2 contractors spread across 2 pages — retain both contractor associations
 
 **Project 255:** REJECTED AS PRIMARY DATASET (unchanged).
 

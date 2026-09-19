@@ -409,39 +409,55 @@ The portal's JavaScript (`kaduna.js`) constructs requests to a prefixed route:
 
 The **non-prefixed GET** route (`https://www.ocds.kdsg.gov.ng/Projects/fetchprojects/{page}`) is the ONLY working method. The portal's own JavaScript generates requests to a route that does not return data.
 
-**Record duplication behavior (reconciled after complete page-by-page analysis):**
+**Record duplication behavior (reconciled — four mutually exclusive categories):**
 
-The endpoint returns records with a complex duplication pattern involving three distinct multiplicity levels:
+The endpoint returns records with a complex duplication pattern. The previous report incorrectly stated that all 523 multiplicity-2 IDs were intra-page only, creating an unresolved contradiction with the 116 cross-page IDs.
 
-| Multiplicity | IDs | Raw records | Description |
-|-------------|-----|-------------|-------------|
-| 1 (once) | 5 | 5 | Singleton projects, one occurrence |
-| 2 (twice) | 523 | 1046 | Intra-page duplicates only — 2 identical copies on same page |
-| 4 (4×) | 82 | 328 | Cross-page + intra-page: 3 copies on one page + 1 on adjacent page |
+| Category | Count | Definition | Multiplicity |
+|----------|-------|------------|-------------|
+| A. SINGLETON | 5 | 1 page, 1 occurrence | 1 |
+| B. INTRA_PAGE_ONLY | 462 | 1 page, 2 identical occurrences | 2 |
+| C. INTRA_PAGE_ONLY (mult-4) | 27 | 1 page, 4 occurrences (2 contractors, 2+2 pattern) | 4 |
+| D. CROSS_PAGE_ONLY | 61 | 2 adjacent pages, 1 occurrence each, 1 contractor | 2 |
+| E. BOTH (cross-page mult-4) | 55 | 2 adjacent pages, 3+1 pattern, 2 contractors | 4 |
 
-**Arithmetic:** 5 × 1 + 523 × 2 + 82 × 4 = 5 + 1046 + 328 = 1379 ✓
+**Arithmetic:** 5×1 + 462×2 + 27×4 + 61×2 + 55×4 = 5 + 924 + 108 + 122 + 220 = 1379 ✓
 
-**Multiplicity-2 IDs (523, 85.7%):** These project IDs appear exactly twice, both times on the same page. The two records are byte-for-byte identical — every field matches.
+**Multiplicity-2 IDs (523 total):**
+- 462 intra-page only: 2 identical copies on same page, 1 contractor
+- 61 cross-page only: 1 copy on each of 2 adjacent pages, 1 contractor, records identical
+- **The previous report was WRONG to claim all 523 were intra-page only. 61 are cross-page.**
 
-**Multiplicity-4 IDs (82, 13.4%):** These project IDs appear 4 times across 2 adjacent pages. Pattern: 3 occurrences on one page + 1 occurrence on the adjacent page. Within each page, the 3 copies are byte-for-byte identical. Across pages, records with the same contractor are identical; records with different contractors differ ONLY in contractor-related fields (contractor_id, contractor, address, phone, email). All other fields (title, budget_amount, amount, date_sign, name/MDA, lga, procurement_method, start_date, year, etc.) are identical.
+**Multiplicity-4 IDs (82 total):**
+- 27 intra-page only: 4 copies on 1 page, 2 different contractors
+- 55 cross-page: 3 copies on one page + 1 on adjacent page, 2 different contractors
 
-**Cross-page overlap:** 116 IDs appear on 2 adjacent pages. Overlap between consecutive pages involves exactly 1 shared ID per overlapping transition (116 such transitions). 0 IDs appear on non-adjacent pages.
+**Cross-page IDs (116 total):**
+- 61 multiplicity-2: 1 occurrence per page × 2 pages, identical records
+- 55 multiplicity-4: 3+1 pattern across 2 adjacent pages, 2 contractors
+- Each cross-page ID corresponds to exactly 1 adjacent page transition with overlap size 1
+- 116 overlapping transitions × 1 ID = 116 cross-page IDs (one-to-one mapping)
+
+**Page overlap distribution:**
+- 116 adjacent page transitions share exactly 1 ID
+- 114 adjacent page transitions share 0 IDs
+- No transition shares more than 1 ID
 
 **Record equality (verified for ALL 605 repeated ID groups):**
-- Identical duplicate groups: 523 (all records identical)
-- Differing duplicate groups: 82 (differ ONLY in contractor-related fields)
+
+| Category | Count | Identical | Differing | Differing fields |
+|----------|-------|-----------|-----------|------------------|
+| Intra-page only (mult-2) | 462 | 462 | 0 | — |
+| Intra-page only (mult-4) | 27 | 0 | 27 | contractor_id, contractor, address, phone, email |
+| Cross-page only (mult-2) | 61 | 61 | 0 | — |
+| Both (mult-4) | 55 | 0 | 55 | contractor_id, contractor, address, phone, email |
+| **TOTAL** | **605** | **523** | **82** | **contractor fields only** |
 
 **Fields that NEVER differ:** title, budget_amount, amount, date_sign, name (MDA), lga, procurement_method, start_date, year, project_category, category, period, bid_open_start, award_criteria.
 
 **Fields that sometimes differ (82 groups):** contractor_id (82), contractor (82), address (82), phone (82), email (60).
 
-**Total field reconciliation:**
-- Endpoint `total` = 1379 (verified constant across all pages)
-- Sum of page raw counts = 1379 (229 × 6 + 1 × 5 = 1379)
-- Measured distinct IDs = 610
-- `total` EQUALS raw record count, NOT distinct count
-
-**Source record identity:** Composite key of project ID + contractor. Each project ID is one procurement project that may have multiple contractors. Non-contractor fields are identical across all records for a project ID.
+**Source record identity:** Composite key of project ID + contractor. Each project ID is one procurement project (610 unique) that may have 1-2 contractors. Non-contractor fields are identical across all records for a project ID.
 
 **Field coverage against Ordaciti canonical schema (implementation.md section 8):**
 

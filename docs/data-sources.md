@@ -31,17 +31,41 @@ A working public JSON endpoint was discovered at `https://www.ocds.kdsg.gov.ng/P
 - **Status:** VERIFIED VIABLE — returns valid JSON with project records
 - **Pagination:** 230 populated pages (pages 1-230), page 231 empty. 6 records per page in a rolling-window overlap pattern.
 - **Record count:** `total` field = 1379 = exact raw record count (confirmed by full enumeration of all 230 populated pages). Distinct project IDs = **610** (measured, not estimated). ID range: 2 to 848 (ID 1 missing; 238 gaps in range).
-- **Record duplication (reconciled after complete page-by-page analysis):**
+- **Record duplication (reconciled — four mutually exclusive categories):**
 
-The endpoint returns records with a three-level multiplicity pattern that is more complex than simple intra-page duplication:
+The endpoint returns records with a complex duplication pattern. The previous report incorrectly stated that all 523 multiplicity-2 IDs were intra-page only, creating a contradiction with the 116 cross-page IDs.
 
-| Multiplicity | IDs | Raw records | Description |
-|-------------|-----|-------------|-------------|
-| 1 (once) | 5 | 5 | Singleton projects |
-| 2 (twice) | 523 | 1046 | Intra-page duplicates — 2 identical copies on same page |
-| 4 (4×) | 82 | 328 | Cross-page + intra-page: 3 copies on one page + 1 on adjacent page |
+| Category | Count | Definition |
+|----------|-------|------------|
+| SINGLETON | 5 | 1 page, 1 occurrence |
+| INTRA_PAGE_ONLY (mult-2) | 462 | 1 page, 2 identical copies, 1 contractor |
+| INTRA_PAGE_ONLY (mult-4) | 27 | 1 page, 4 copies, 2 contractors |
+| CROSS_PAGE_ONLY (mult-2) | 61 | 2 adjacent pages, 1 copy each, 1 contractor |
+| BOTH (cross-page mult-4) | 55 | 2 adjacent pages, 3+1 pattern, 2 contractors |
 
-**Arithmetic:** 5 × 1 + 523 × 2 + 82 × 4 = 1379 ✓
+**Arithmetic:** 5×1 + 462×2 + 27×4 + 61×2 + 55×4 = 1379 ✓
+
+**Multiplicity-2 IDs (523):** 462 intra-page only + 61 cross-page only. The previous report was WRONG to claim all 523 were intra-page only.
+
+**Multiplicity-4 IDs (82):** 27 intra-page only + 55 cross-page.
+
+**Cross-page IDs (116):** 61 mult-2 + 55 mult-4. Each corresponds to exactly 1 adjacent page transition with overlap size 1.
+
+**Record equality by category:**
+
+| Category | Identical | Differing | Differing fields |
+|----------|-----------|-----------|------------------|
+| Intra-page only (mult-2) | 462 | 0 | — |
+| Intra-page only (mult-4) | 0 | 27 | contractor_id, contractor, address, phone, email |
+| Cross-page only (mult-2) | 61 | 0 | — |
+| Both (mult-4) | 0 | 55 | contractor_id, contractor, address, phone, email |
+| **TOTAL** | **523** | **82** | **contractor fields only** |
+
+**Fields that NEVER differ:** title, budget_amount, amount, date_sign, name (MDA), lga, procurement_method, start_date, year.
+
+**Total field reconciliation:** Endpoint `total` = 1379 = sum of raw records. Distinct IDs = 610. `total` = raw count, NOT distinct count.
+
+**Source record identity:** Composite key of project ID + contractor. 610 unique projects, 1-2 contractors each.
 
 **Multiplicity-2 IDs (523, 85.7%):** Appear exactly twice, both on the same page. The two records are byte-for-byte identical.
 
