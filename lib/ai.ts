@@ -2,7 +2,51 @@
 // Uses OpenAI-compatible API. Model and key from environment only.
 
 import OpenAI from 'openai'
+import { readFileSync, mkdir, writeFile } from 'node:fs'
+import fs from 'node:fs/promises'
+import path from 'node:path'
+import crypto from 'node:crypto'
 import { getEvidenceById } from './data'
+
+// ---------------------------------------------------------------------------
+// Cache configuration
+// ---------------------------------------------------------------------------
+
+const CACHE_DIR = path.join(process.cwd(), 'data', 'AI_cache')
+
+function getEvidenceVersion(): string {
+  const evidencePath = path.join(process.cwd(), 'data', 'processed', 'evidence.json')
+  try {
+    const content = JSON.parse(readFileSync(evidencePath, 'utf-8'))
+    const manifestStr = JSON.stringify(content.manifest, Object.keys(content.manifest).sort())
+    return crypto.createHash('md5').update(manifestStr).digest('hex').substring(0, 12)
+  } catch {
+    return 'unknown'
+  }
+}
+
+async function readCache(projectId: string, expectedVersion: string): Promise<ExplainResponse | null> {
+  const cacheFile = path.join(CACHE_DIR, `${projectId}.json`)
+  try {
+    const content = await fs.readFile(cacheFile, 'utf-8')
+    const cached = JSON.parse(content) as { metadata?: { evidence_version?: string }; response?: unknown }
+    if (cached.metadata?.evidence_version === expectedVersion && cached.response) {
+      return cached.response as ExplainResponse
+    }
+    return null
+  } catch {
+    return null
+  }
+}
+
+async function writeCache(projectId: string, evidenceVersion: string, response: ExplainResponse): Promise<void> {
+  await fs.mkdir(CACHE_DIR, { recursive: true })
+  const cacheFile = path.join(CACHE_DIR, `${projectId}.json`)
+  await fs.writeFile(cacheFile, JSON.stringify({
+    metadata: { evidence_version: evidenceVersion, cached_at: new Date().toISOString() },
+    response,
+  }, null, 2))
+}
 
 // ---------------------------------------------------------------------------
 // Types
@@ -275,7 +319,7 @@ async function getOpenAi(): Promise<OpenAI | null> {
   }
 }
 
-export async function explainProject(request: ExplainRequest): Promise<AiResult> {
+export async function explainProject(request: ExplainRequest, forceRefresh = false): Promise<AiResult> {
   const { project_id } = request
 
   if (!project_id || typeof project_id !== 'string' || !project_id.trim()) {
@@ -288,6 +332,15 @@ export async function explainProject(request: ExplainRequest): Promise<AiResult>
   const ev = getEvidenceById(trimmedId)
   if (!ev) {
     return { error: 'Project not found', status: 404, detail: `No evidence exists for project_id "${trimmedId}"` }
+  }
+
+  // Check cache (unless forced refresh)
+  if (!forceRefresh) {
+    const evidenceVersion = getEvidenceVersion()
+    const cached = await readCache(trimmedId, evidenceVersion)
+    if (cached) {
+      return cached
+    }
   }
 
   // Build prompt from evidence
@@ -354,6 +407,10 @@ export async function explainProject(request: ExplainRequest): Promise<AiResult>
       }
     }
 
+    // Write to cache
+    const evidenceVersion = getEvidenceVersion()
+    await writeCache(trimmedId, evidenceVersion, parsed as ExplainResponse)
+
     return parsed as ExplainResponse
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
@@ -369,3 +426,5 @@ export async function explainProject(request: ExplainRequest): Promise<AiResult>
 }
 
 // Export only the public API
+export { getEvidenceVersion, readCache, writeCache }
+export { isValidExplainResponse }

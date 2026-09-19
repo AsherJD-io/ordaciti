@@ -40,6 +40,7 @@ temp/
 # Generated datasets
 data/raw/
 data/processed/
+data/AI_cache/
 
 # Generated media
 public/screenshots/generated/
