@@ -1066,9 +1066,9 @@ The Kaduna endpoint is intermittently unreachable from the WSL Python runtime. F
 || 2 — Source Discovery | COMPLETE | 2026-09-19 | Initial investigation: no viable source found |
 || 2B — `/Projects` Route Verification | COMPLETE | 2026-09-19 | VIABLE PRIMARY SOURCE FOUND |
 || 3 — Data Ingestion | COMPLETE | 2026-09-19 | Source-of-truth correction + audit complete |
-||| 4 — Normalization | COMPLETE | 2026-09-19 | Deterministic normalization of 610 projects. 25 canonical fields preserved. 9 original_* fields retained. 17 normalized_* audit fields added. 692 contractor associations preserved. Phase 3 output is the input. No Phase 5 work performed. |
+||| 4 — Normalization | COMPLETE | 2026-09-19 | Deterministic normalization of 610 projects. 25 canonical fields preserved. 9 original_* fields retained. 17 normalized_* audit fields added. 692 contractor associations preserved. 35 malformed 00XX dates safely set to None. Corrected 23-LGA Kaduna reference set (Kauru, Sabon Gari added; Gwagwalada removed). Phase 3 output is the input. No Phase 5 work performed. |
 
-**Current state:** Phase 4 COMPLETE. Normalization complete: 610 projects normalized deterministically with all 25 canonical fields preserved, 9 original_* fields retained, 17 normalized_* audit fields added, and 692 contractor associations intact. Phase 3 output (data/processed/projects.json) is the input. No Phase 5 or later work performed.
+**Current state:** Phase 4 COMPLETE. Normalization complete: 610 projects normalized deterministically with all 25 canonical fields preserved, 9 original_* fields retained, 17 normalized_* audit fields added, and 692 contractor associations intact. 35 malformed 00XX dates (e.g. 0016-03-18, 0018-12-27) safely set to None — not converted to fabricated dates. Corrected 23-LGA Kaduna reference set: Kauru and Sabon Gari added; Gwagwalada (FCT) removed. Phase 3 output (data/processed/projects.json) is the input. No Phase 5 or later work performed.
 
 **Next action:** Ready to begin Phase 5 — Pattern Discovery, per implementation.md. Phase 5 is NOT started.
 
