@@ -1205,33 +1205,276 @@ This is a documented, verified blocker — not a transient issue. OGP historical
 
 Project 255 remains REJECTED as the primary Ordaciti dataset. It is a ward-level project showcase portal, not an OCDS/OC4IDS procurement data source. It does not provide the procurement records required by implementation.md section 8 (canonical project schema): no OCIDs, no contract amounts, no contractor names, no dates of award/advert, no procurement methods, no release data. Project 255 artifacts are preserved in `data/raw/project255_*.json` and `scripts/*255*` as investigation evidence only.
 
-## Phase Status Update
+## Phase 2 Source-Access Recovery Investigation Complete
 
-|| Phase | Status | Date | Notes |
-|---|---|---|---|---|
-| 1 — Repository Skeleton | COMPLETE | 2026-09-18 | Commit c668905 |
-| 2 — Source Discovery | BLOCKED | 2026-09-19 | Investigation complete. No viable primary source found. All OCDS/OC4IDS endpoints non-functional. No external mirrors. |
-| 3 — Data Ingestion | NOT STARTED | — | Blocked until primary data access is resolved. |
+**Status:** BLOCKED — investigation complete, no viable primary source found.
 
-**Current state:** Phase 2 BLOCKED. No viable primary Kaduna procurement data source accessible. Project 255 rejected as primary dataset. Phase 2 source-access recovery investigation complete.
+**Date:** 2026-09-19
 
-**Remaining access blocker:** The Kaduna State OCDS/OC4IDS project records exist in a backend database (confirmed by portal aggregate statistics: 1,379+ projects, ₦95.6B total contract value), but all programmatic access paths are non-functional. The APIs return HTTP 500, the OC4IDS backend requires an undocumented authentication token, the web interface renders zero projects, and no external mirrors or bulk downloads exist. Resolution options: (1) KADPPA restores API functionality, (2) KADPPA provides API credentials or data export, (3) a data mirror appears in an accessible registry, (4) the web interface becomes functional for data extraction. None of these conditions are currently met.
+**Commit:** c4f9e91 (Phase 5 checkpoint); Phase 2 blocker unchanged
+
+### Overview
+
+Phase 2 source-access recovery investigation completed. The real Kaduna procurement/OCDS/OC4IDS data exists (confirmed by portal aggregate statistics: 1,379+ raw records, ₦95.6B total contract value) but no legitimate, reproducible programmatic access path exists. All OCDS project-data API endpoints return HTTP 500. The OC4IDS backend requires an undocumented authentication token. The OC4IDS portal web interface is suspended. The Azure portal is defunct. No external mirrors, data registries, or GitHub repositories contain the Kaduna procurement dataset.
+
+### Primary dataset decision
+
+**NO VIABLE PRIMARY SOURCE FOUND**
+
+The Phase 2 blocker remains unresolved. The data exists but cannot be accessed programmatically through any legitimate, reproducible path.
+
+### Project 255 status
+
+Project 255 remains REJECTED as the primary Ordaciti dataset. It is a ward-level project showcase portal, not an OCDS/OC4IDS procurement data source.
+
+---
+
+## Phase 3 — Data Ingestion
+
+**Status:** NOT STARTED
+
+**Date:** —
+
+**Commit:** —
+
+### Prerequisites
+
+A viable primary Kaduna procurement data source must be available. This phase is BLOCKED until one of the following occurs:
+
+1. **API recovery:** The OCDS/OC4IDS APIs recover and return project data
+2. **Alternative access found:** A data mirror, bulk download, or authenticated access path is discovered
+3. **Manual extraction viable:** Browser automation can extract sufficient data from a working web interface
+4. **Data access granted:** KADPPA provides API credentials or a data export
+
+The Project 255 portal is NOT a viable primary source for Phase 3 because it does not provide OCDS procurement records.
+
+---
+
+## Phase 4 — Normalization
+
+**Status:** COMPLETE
+
+**Date:** 2026-09-19
+
+**Commit:** 5e29227 — `phase 4: correct normalization edge cases`
+
+### Objective
+
+Transform raw Kaduna OCDS portal data into a clean, consistent, canonical dataset.
+
+### Implemented
+
+- `scripts/normalize_ocds.py` — Deterministic normalization pipeline
+- `data/processed/projects.json` — Raw project records (1,379 raw records)
+- `data/processed/normalized_projects.json` — 610 distinct normalized projects with:
+  - Preserved original_* fields
+  - Normalized title, mda, sector, category, lga, procurement_method
+  - Normalized budget_amount, contract_amount (numeric)
+  - Normalized dates (date_of_advert, date_of_award)
+  - Contractor associations (692 total, 82 multi-contractor projects)
+  - Source URLs and metadata
+
+### Validation
+
+- 610 unique projects from 1,379 raw records
+- All contractor associations preserved
+- No data loss during normalization
+- Deterministic output confirmed
+
+---
+
+## Phase 5 — Pattern Discovery (Clustering)
+
+**Status:** COMPLETE
+
+**Date:** 2026-09-19
+
+**Commit:** c4f9e91 — `phase 5: add is_cluster_link to cluster-internal relationship records`
+
+### Objective
+
+Implement deterministic pattern discovery: similarity scoring, hybrid clustering, project history, cumulative contract values, and demo-case candidates.
+
+### Implemented
+
+- `scripts/discover_patterns.py` — Pattern discovery pipeline
+- `data/processed/patterns.json` — Pattern discovery output with:
+  - 7 clusters, 579 singletons, 31 non-singleton projects (all 610 represented)
+  - 3,515 similarity relationships (84 cluster links, 3,431 candidates)
+  - 7 project history sequences
+  - 5 cumulative value records
+  - 7 demo-case candidates
+
+### Clustering configuration
+
+- Method: Union-find connected components with hybrid similarity scoring
+- Threshold: 85
+- Text similarity: rapidfuzz ratio (weighted contribution)
+- Contextual gate: same known Kaduna LGA (required for cluster membership)
+- Same-sector bonus: applied when sector matches
+- Keyword overlap: noted as analytical context, not cluster membership criterion
+- Geographic proximity: not implemented (0 projects with coordinates)
+
+### Key fixes applied
+
+1. **Project-count reconciliation** (earlier Phase 5): Fixed singleton tracking to include all non-clustered projects
+2. **Hybrid clustering gate** (earlier Phase 5): Text similarity alone no longer sufficient; same known Kaduna LGA required
+3. **is_cluster_link field** (this commit): Added `is_cluster_link: True` to cluster-internal relationship records
+
+### Validation
+
+- 610/610 input projects represented
+- No invented project IDs
+- No duplicate or self-relationships
+- Cluster links carry `is_cluster_link: True`
+- Cluster links use only valid Kaduna LGA values
+- Missing-context projects not clustered
+- Largest cluster: 16 projects (all Igabi LGA, same sector, coherent)
+- Deterministic output: two runs produce identical MD5
+- `implementation.md` untouched
+
+---
+
+## Phase 6 — Signal Generation
+
+**Status:** COMPLETE
+
+**Date:** 2026-09-19
+
+**Commit:** —
+
+### Objective
+
+Implement the five core signals per implementation.md section 12-17.
+
+### Implemented
+
+- `scripts/generate_signals.py` — Deterministic signal generation pipeline
+- `data/processed/signals.json` — Signal output
+
+### Signal counts
+
+| Signal Type | Count | Status |
+|---|---|---|
+| REPEAT_INTERVENTION | 7 | VERIFIED — derived from cluster history with dates |
+| CONTRACTOR_RECURRENCE | 141 | VERIFIED — derived from contractor associations |
+| EVIDENCE_GAP | 610 | VERIFIED — lifecycle assessment per project |
+| RECORD_CHANGE | 1 | UNAVAILABLE — no OCDS release data in source |
+| ALLOCATION_CONTEXT | 278 | VERIFIED — LGA aggregation; population metrics unavailable |
+
+### Validation
+
+- All 5 signal types implemented per implementation.md
+- No invented project IDs
+- No invented dates, amounts, contractors, or populations
+- REPEAT_INTERVENTION uses cluster history (not title similarity alone)
+- CONTRACTOR_RECURRENCE uses actual contractor associations
+- EVIDENCE_GAP covers all 610 projects
+- RECORD_CHANGE correctly marked unavailable (no releases in source)
+- ALLOCATION_CONTEXT aggregates by LGA; population metrics marked unavailable
+- Missing/null data handled correctly (not converted to zero)
+- Deterministic output: two runs produce identical MD5
+- `implementation.md` untouched
+
+### Limitations
+
+- **RECORD_CHANGE:** The Kaduna OCDS source does not provide release data (all `source_release_id` values are null). Record change detection requires multiple releases per project which are not available. This is documented as unavailable, not fabricated.
+- **ALLOCATION_CONTEXT:** Population data is not available in the current dataset. Population-normalized metrics (`value_per_100k_population`, `projects_per_100k_population`) are null. Per implementation.md section 17, these metrics are only calculated where population/context data exists.
+- **Semantic similarity:** Not implemented (no embedding model in scope). Text similarity uses rapidfuzz fuzzy matching.
+- **Geographic proximity:** Not implemented (0/610 projects have coordinates).
+
+---
+
+## Phase Status Summary
+
+||| Phase | Status | Date | Commit |
+||---|---|---|---|---|
+|| 1 — Repository Skeleton | COMPLETE | 2026-09-18 | c668905 |
+|| 2 — Source Discovery | BLOCKED | 2026-09-19 | (no new commit) |
+|| 3 — Data Ingestion | NOT STARTED | — | — |
+|| 4 — Normalization | COMPLETE | 2026-09-19 | 5e29227 |
+|| 5 — Pattern Discovery | COMPLETE | 2026-09-19 | c4f9e91 |
+|| 6 — Signal Generation | COMPLETE | 2026-09-19 | — |
+
+**Current state:** Phase 6 complete. Phases 1, 4, 5, 6 implemented and validated. Phase 2 BLOCKED (no primary data access). Phase 3 NOT STARTED (blocked on Phase 2). Phase 7 NOT STARTED.
+
+**Next action required:** Phase 7 — Evidence model (requires Phase 6 signals as input).
 
 ## Git
 
-**Investigation session:** 2026-09-19
-**Repository status:** CLEAN — no new files created, no modifications to implementation.md, no fabricated data
-**Commit:** 30e8565 — `docs: establish Phase 2 source blocker checkpoint`
+**Repository status:** CLEAN — no uncommitted changes after Phase 6 implementation
 
-**Investigation artifacts preserved (not new):**
-- `data/raw/project255_raw.json` — Project 255 initial investigation
-- `data/raw/project255_projects.json` — 251 Project 255 titles
-- `data/raw/project255_sample.json` — 30 Project 255 title sample
-- `scripts/collect_project255.sh` — curl collection script
-- `scripts/enrich_project255.sh` — curl enrichment script
-- `scripts/enrich_project255_v2.py` — Python enrichment
+**Commits:**
+- c668905 — `chore: establish Ordaciti project baseline` (Phase 1)
+- 30e8565 — `docs: establish Phase 2 source blocker checkpoint` (Phase 2)
+- 5e29227 — `phase 4: correct normalization edge cases` (Phase 4)
+- c4f9e91 — `phase 5: add is_cluster_link to cluster-internal relationship records` (Phase 5)
 
-These are investigation evidence only, not the Ordaciti primary dataset.
+---
+
+## Phase 7 — Evidence Model
+
+**Status:** NOT STARTED
+
+**Date:** —
+
+**Commit:** —
+
+### Prerequisites
+
+Phase 6 signals must be complete. This phase is ready to begin.
+
+### Scope
+
+Build evidence objects containing facts, signals, unknowns, context, questions, and sources per implementation.md section 21.
+
+---
+
+## Phase 8 — Frontend
+
+**Status:** NOT STARTED
+
+---
+
+## Phase 9 — Context Enrichment
+
+**Status:** NOT STARTED
+
+---
+
+## Phase 10 — AI
+
+**Status:** NOT STARTED
+
+---
+
+## Phase 11 — QA
+
+**Status:** NOT STARTED
+
+---
+
+## Phase 12 — Deploy
+
+**Status:** NOT STARTED
+
+---
+
+## Phase 13 — Document
+
+**Status:** NOT STARTED
+
+---
+
+## Phase 14 — Present
+
+**Status:** NOT STARTED
+
+---
+
+## Phase 15 — Freeze
+
+**Status:** NOT STARTED
 
 ---
 
