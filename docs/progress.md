@@ -1418,7 +1418,7 @@ Implement the five core signals per implementation.md section 12-17.
 
 **Date:** 2026-09-19
 
-**Commit:** —
+**Commit:** 7c6ad42 — `phase 7: fix signal attachment — RECORD_CHANGE no longer attached globally; dedup preserves distinct contractor/cluster signals`
 
 ### Objective
 
