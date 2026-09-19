@@ -1,5 +1,8 @@
 import Link from 'next/link'
+import { ArrowRight, Building2, MapPin, FileSearch, Layers, Shield } from 'lucide-react'
 import { evidence, patterns, signals } from '@/lib/data'
+import { Card } from '@/components/Card'
+import { Badge } from '@/components/Badge'
 
 export const metadata = {
   title: 'Ordaciti — Public Decision Intelligence',
@@ -21,124 +24,220 @@ export default function Home() {
 
   const repeatCount = signalCounts['REPEAT_INTERVENTION'] ?? 0
   const contractorCount = signalCounts['CONTRACTOR_RECURRENCE'] ?? 0
+  const evidenceGapCount = signalCounts['EVIDENCE_GAP'] ?? 0
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b bg-background">
-        <div className="mx-auto max-w-5xl px-4 py-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
+      <header className="border-b border-border/50 bg-background/95 backdrop-blur supports-backdrop-blur:bg-background/60">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="flex h-16 items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-primary-foreground font-bold text-sm">
-                O
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                <Building2 className="h-5 w-5" />
               </div>
-              <div>
-                <h1 className="text-lg font-semibold tracking-tight">Ordaciti</h1>
-                <p className="text-xs text-muted-foreground">Public Decision Intelligence</p>
+              <div className="flex flex-col">
+                <span className="text-lg font-semibold tracking-tight">Ordaciti</span>
+                <span className="text-xs text-muted-foreground">Public Decision Intelligence</span>
               </div>
             </div>
-            <nav className="flex gap-6 text-sm">
+            <nav className="hidden sm:flex items-center gap-8 text-sm">
               <Link href="/" className="font-medium text-foreground">Home</Link>
-              <Link href="/projects" className="font-medium text-muted-foreground hover:text-foreground">Explorer</Link>
+              <Link href="/projects" className="font-medium text-muted-foreground hover:text-foreground transition-colors">Explorer</Link>
+            </nav>
+            <nav className="flex sm:hidden items-center gap-4 text-sm">
+              <Link href="/" className="font-medium text-foreground">Home</Link>
+              <Link href="/projects" className="font-medium text-muted-foreground hover:text-foreground transition-colors">Explorer</Link>
             </nav>
           </div>
         </div>
       </header>
 
       {/* Hero */}
-      <section className="border-b bg-background">
-        <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Government projects are not isolated transactions.
-          </h2>
-          <p className="mt-4 text-lg text-muted-foreground max-w-2xl">
-            Ordaciti connects public procurement records across time and location,
-            identifies recurring interventions, contractor recurrence, evidence gaps
-            and allocation patterns, then presents the evidence for human review.
-          </p>
-          <div className="mt-8 flex gap-4">
-            <Link
-              href="/projects"
-              className="inline-flex items-center rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              Explore {projectCount.toLocaleString()} projects
-              <svg className="ml-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-            </Link>
+      <section className="border-b border-border/50 bg-background">
+        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
+          <div className="max-w-3xl">
+            <Badge variant="primary" size="md" className="mb-6">
+              610 projects analysed
+            </Badge>
+            <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+              Government projects are not isolated transactions.
+            </h1>
+            <p className="mt-6 text-lg text-muted-foreground leading-relaxed max-w-2xl">
+              Ordaciti connects public procurement records across time and location,
+              identifies recurring interventions, contractor recurrence, evidence gaps
+              and allocation patterns, then presents the evidence for human review.
+            </p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Link
+                href="/projects"
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                Explore projects
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+              <p className="text-sm text-muted-foreground">
+                Browse {projectCount.toLocaleString()} government projects with evidence analysis
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Key figures */}
-      <section className="border-b bg-background">
-        <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
+      <section className="border-b border-border/50 bg-background">
+        <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <div className="rounded-lg border bg-card p-4">
-              <div className="text-2xl font-bold">{projectCount.toLocaleString()}</div>
-              <div className="text-xs text-muted-foreground">Projects analysed</div>
-            </div>
-            <div className="rounded-lg border bg-card p-4">
-              <div className="text-2xl font-bold">{clusterCount}</div>
-              <div className="text-xs text-muted-foreground">Related project clusters</div>
-            </div>
-            <div className="rounded-lg border bg-card p-4">
-              <div className="text-2xl font-bold">{singletonCount}</div>
-              <div className="text-xs text-muted-foreground">Projects without detected links</div>
-            </div>
-            <div className="rounded-lg border bg-card p-4">
-              <div className="text-2xl font-bold">{repeatCount + contractorCount}</div>
-              <div className="text-xs text-muted-foreground">Pattern signals detected</div>
-            </div>
+            <Card className="p-5">
+              <div className="text-3xl font-bold tracking-tight">{projectCount.toLocaleString()}</div>
+              <div className="mt-1 text-sm text-muted-foreground">Projects analysed</div>
+            </Card>
+            <Card className="p-5">
+              <div className="text-3xl font-bold tracking-tight">{clusterCount}</div>
+              <div className="mt-1 text-sm text-muted-foreground">Related project clusters</div>
+            </Card>
+            <Card className="p-5">
+              <div className="text-3xl font-bold tracking-tight">{singletonCount}</div>
+              <div className="mt-1 text-sm text-muted-foreground">Projects without detected links</div>
+            </Card>
+            <Card className="p-5">
+              <div className="text-3xl font-bold tracking-tight">{repeatCount + contractorCount + evidenceGapCount}</div>
+              <div className="mt-1 text-sm text-muted-foreground">Intelligence signals detected</div>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Intelligence signals */}
+      <section className="border-b border-border/50 bg-background">
+        <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold tracking-tight">Intelligence signals</h2>
+            <p className="mt-2 text-muted-foreground">
+              Ordaciti surfaces observable patterns from the available evidence — without making judgements.
+            </p>
+          </div>
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <Card hover>
+              <div className="flex items-start gap-4 p-1">
+                <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-50">
+                  <Layers className="h-5 w-5 text-amber-600" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="font-semibold text-foreground">Repeat interventions</h3>
+                  <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
+                    Projects cluster around recurring interventions in the same location and sector — flagging potential program patterns for review.
+                  </p>
+                  <div className="mt-3 flex items-center gap-2">
+                    <Badge variant="outline">{repeatCount} signals</Badge>
+                  </div>
+                </div>
+              </div>
+            </Card>
+            <Card hover>
+              <div className="flex items-start gap-4 p-1">
+                <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50">
+                  <FileSearch className="h-5 w-5 text-blue-600" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="font-semibold text-foreground">Contractor recurrence</h3>
+                  <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
+                    Identifies contractors appearing across multiple projects — useful for understanding procurement patterns.
+                  </p>
+                  <div className="mt-3 flex items-center gap-2">
+                    <Badge variant="outline">{contractorCount} signals</Badge>
+                  </div>
+                </div>
+              </div>
+            </Card>
+            <Card hover>
+              <div className="flex items-start gap-4 p-1">
+                <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-red-50">
+                  <Shield className="h-5 w-5 text-red-500" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="font-semibold text-foreground">Evidence gaps</h3>
+                  <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
+                    Maps the project lifecycle against available evidence — highlighting where documentation is thin or absent.
+                  </p>
+                  <div className="mt-3 flex items-center gap-2">
+                    <Badge variant="outline">{evidenceGapCount} signals</Badge>
+                  </div>
+                </div>
+              </div>
+            </Card>
           </div>
         </div>
       </section>
 
       {/* Principles */}
-      <section className="border-b bg-background">
-        <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
-          <h3 className="text-xl font-semibold mb-4">How Ordaciti works</h3>
-          <div className="space-y-6">
-            <div className="rounded-lg border bg-card p-4">
-              <h4 className="font-medium mb-2">Recorded evidence, not assertions</h4>
-              <p className="text-sm text-muted-foreground">
-                Every project page shows the facts recorded in source data, the signals
-                derived from those facts, and what is missing. Missing evidence is described
-                as unavailable — not as proof that something did not happen.
-              </p>
-            </div>
-            <div className="rounded-lg border bg-card p-4">
-              <h4 className="font-medium mb-2">Patterns across time and location</h4>
-              <p className="text-sm text-muted-foreground">
-                Related projects are connected by shared location, sector, and documented
-                intervention patterns. The system surfaces repeated interventions and
-                recurring contractors without making judgements about why.
-              </p>
-            </div>
-            <div className="rounded-lg border bg-card p-4">
-              <h4 className="font-medium mb-2">Questions for human review</h4>
-              <p className="text-sm text-muted-foreground">
-                Each project includes neutral review questions grounded in the available
-                evidence. Ordaciti does not decide what citizens should believe — it gives
-                them a clearer evidence base for asking better questions.
-              </p>
-            </div>
+      <section className="border-b border-border/50 bg-background">
+        <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold tracking-tight">How Ordaciti works</h2>
+          </div>
+          <div className="grid gap-5 lg:grid-cols-3">
+            <Card>
+              <div className="flex items-start gap-4">
+                <div className="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                  <MapPin className="h-4 w-4 text-primary" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="font-semibold text-foreground">Recorded evidence, not assertions</h3>
+                  <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                    Every project page shows the facts recorded in source data, the signals
+                    derived from those facts, and what is missing. Missing evidence is described
+                    as unavailable — not as proof that something did not happen.
+                  </p>
+                </div>
+              </div>
+            </Card>
+            <Card>
+              <div className="flex items-start gap-4">
+                <div className="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                  <Layers className="h-4 w-4 text-primary" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="font-semibold text-foreground">Patterns across time and location</h3>
+                  <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                    Related projects are connected by shared location, sector, and documented
+                    intervention patterns. The system surfaces repeated interventions and
+                    recurring contractors without making judgements about why.
+                  </p>
+                </div>
+              </div>
+            </Card>
+            <Card>
+              <div className="flex items-start gap-4">
+                <div className="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                  <Shield className="h-4 w-4 text-primary" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="font-semibold text-foreground">Questions for human review</h3>
+                  <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                    Each project includes neutral review questions grounded in the available
+                    evidence. Ordaciti does not decide what citizens should believe — it gives
+                    them a clearer evidence base for asking better questions.
+                  </p>
+                </div>
+              </div>
+            </Card>
           </div>
         </div>
       </section>
 
       {/* Evidence gaps */}
-      <section className="border-b bg-background">
-        <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
-          <h3 className="text-xl font-semibold mb-4">What is missing matters</h3>
-          <div className="rounded-lg border bg-card p-4">
-            <p className="text-sm text-muted-foreground">
+      <section className="border-b border-border/50 bg-background">
+        <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
+          <div className="rounded-lg border border-border bg-card p-6 sm:p-8">
+            <h2 className="text-lg font-semibold tracking-tight">What is missing matters</h2>
+            <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
               Across the {projectCount.toLocaleString()} projects analysed, most lack implementation-stage
               evidence: completion reports, payment records, and photographs are not available
-              in the retrieved source data. This does not mean those activities did not happen —
+              in the retrieved source data. This does not mean those activities did not happen — 
               it means the available public records do not show them.
             </p>
-            <p className="mt-3 text-sm text-muted-foreground">
+            <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
               Ordaciti represents each lifecycle stage as available, partial, missing, or unknown.
               The evidence gap signal helps identify where recorded evidence is thin, so reviewers
               can decide what additional information to seek.
@@ -148,10 +247,19 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t bg-background py-6">
-        <div className="mx-auto max-w-5xl px-4 text-center text-sm text-muted-foreground">
-          <p>Ordaciti — built from public procurement records.</p>
-          <p className="mt-1">Evidence is synthesised from available data. Missing information is not fabricated.</p>
+      <footer className="border-t border-border/50 bg-background py-8">
+        <div className="mx-auto max-w-6xl px-4 text-center sm:text-left">
+          <div className="flex flex-col gap-2 sm:flex-row sm:justify-between">
+            <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                <Building2 className="h-4 w-4" />
+              </div>
+              <span className="text-sm font-medium text-foreground">Ordaciti</span>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Built from public procurement records. Evidence is synthesised from available data. Missing information is not fabricated.
+            </p>
+          </div>
         </div>
       </footer>
     </div>

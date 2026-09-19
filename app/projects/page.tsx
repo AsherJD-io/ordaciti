@@ -2,7 +2,13 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
-import { buildProjectList, filterAndSort, getFilterOptions, type FilterValues, type ProjectListItem } from '@/lib/data'
+import { Search, Filter, X, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
+import { buildProjectList, filterAndSort, getFilterOptions, type FilterValues } from '@/lib/data'
+import { Card } from '@/components/Card'
+import { Badge } from '@/components/Badge'
+import { SectionHeader } from '@/components/SectionHeader'
+import { Breadcrumb } from '@/components/Breadcrumb'
+import { SortButton } from '@/components/SortButton'
 
 export default function ProjectsPage() {
   const allProjects = buildProjectList()
@@ -34,145 +40,225 @@ export default function ProjectsPage() {
   const hasActiveFilters = filters.query || filters.lga !== 'all' || filters.sector !== 'all' ||
     filters.mda !== 'all' || filters.hasSignals !== null
 
+  const SortIcon = filters.sortDir === 'asc' ? ArrowUp : ArrowDown
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b bg-background sticky top-0 z-10">
-        <div className="mx-auto max-w-5xl px-4 py-3 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground">
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-              Back to home
-            </Link>
-            <nav className="flex gap-6 text-sm">
-              <Link href="/" className="text-muted-foreground hover:text-foreground">Home</Link>
+      <header className="sticky top-0 z-10 border-b border-border/50 bg-background/95 backdrop-blur supports-backdrop-blur:bg-background/60">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="flex h-14 items-center justify-between">
+            <Breadcrumb href="/" label="Back to home" />
+            <nav className="flex items-center gap-6 text-sm">
+              <Link href="/" className="text-muted-foreground hover:text-foreground transition-colors">Home</Link>
               <Link href="/projects" className="font-medium text-foreground">Explorer</Link>
             </nav>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
-        {/* Title */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold">Project Explorer</h1>
+      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+        {/* Page header */}
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Project Explorer</h1>
           <p className="mt-1 text-muted-foreground">
-            {filtered.length.toLocaleString()} of {allProjects.length.toLocaleString()} projects
+            Browse {allProjects.length.toLocaleString()} government projects with evidence analysis
           </p>
         </div>
 
-        {/* Search */}
-        <div className="mb-4">
-          <input
-            type="search"
-            placeholder="Search by project ID, title, LGA, sector, or MDA..."
-            className="w-full rounded-md border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-ring"
-            value={filters.query}
-            onChange={e => update('query', e.target.value)}
-          />
+        {/* Search and filters */}
+        <div className="mb-6 space-y-4">
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="search"
+              placeholder="Search by project ID, title, LGA, sector, or MDA..."
+              className="w-full rounded-lg border border-border bg-background pl-10 pr-4 py-2.5 text-sm placeholder:text-muted-foreground/60 focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/50 transition-colors"
+              value={filters.query}
+              onChange={e => update('query', e.target.value)}
+            />
+          </div>
+
+          {/* Filter options */}
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div>
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5 block">LGA</label>
+              <div className="relative">
+                <Filter className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                <select
+                  className="w-full rounded-lg border border-border bg-background pl-8 pr-8 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/50 transition-colors appearance-none cursor-pointer"
+                  value={filters.lga}
+                  onChange={e => update('lga', e.target.value)}
+                >
+                  <option value="all">All LGAs</option>
+                  {options.lgas.map(l => <option key={l} value={l}>{l}</option>)}
+                </select>
+                <div className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2">
+                  <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
+                </div>
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5 block">Sector</label>
+              <div className="relative">
+                <Filter className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                <select
+                  className="w-full rounded-lg border border-border bg-background pl-8 pr-8 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/50 transition-colors appearance-none cursor-pointer"
+                  value={filters.sector}
+                  onChange={e => update('sector', e.target.value)}
+                >
+                  <option value="all">All sectors</option>
+                  {options.sectors.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+                <div className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2">
+                  <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
+                </div>
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5 block">MDA</label>
+              <div className="relative">
+                <Filter className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                <select
+                  className="w-full rounded-lg border border-border bg-background pl-8 pr-8 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/50 transition-colors appearance-none cursor-pointer"
+                  value={filters.mda}
+                  onChange={e => update('mda', e.target.value)}
+                >
+                  <option value="all">All MDAs</option>
+                  {options.mdas.map(m => <option key={m} value={m}>{m}</option>)}
+                </select>
+                <div className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2">
+                  <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
+                </div>
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5 block">Has signals</label>
+              <div className="relative">
+                <Filter className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                <select
+                  className="w-full rounded-lg border border-border bg-background pl-8 pr-8 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/50 transition-colors appearance-none cursor-pointer"
+                  value={filters.hasSignals === null ? 'all' : filters.hasSignals ? 'yes' : 'no'}
+                  onChange={e => update('hasSignals', e.target.value === 'yes' ? true : e.target.value === 'no' ? false : null)}
+                >
+                  <option value="all">All projects</option>
+                  <option value="yes">With signals only</option>
+                  <option value="no">Without signals</option>
+                </select
+                >
+                <div className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2">
+                  <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Sort controls */}
+          <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-card p-3">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-foreground">Sort:</span>
+              <select
+                className="rounded-md border-0 bg-transparent px-3 py-1 text-sm focus:outline-none focus:ring-0"
+                value={filters.sortBy}
+                onChange={e => update('sortBy', e.target.value)}
+              >
+                <option value="id">Project ID</option>
+                <option value="title">Title</option>
+                <option value="lga">LGA</option>
+                <option value="sector">Sector</option>
+                <option value="contract_value">Contract value</option>
+                <option value="date_advert">Date of advert</option>
+              </select>
+            </div>
+            <SortButton
+              label={filters.sortDir === 'asc' ? 'Ascending' : 'Descending'}
+              active
+              direction={filters.sortDir}
+              onClick={() => update('sortDir', filters.sortDir === 'asc' ? 'desc' : 'asc')}
+            />
+            {hasActiveFilters && (
+              <button
+                type="button"
+                className="ml-auto flex items-center gap-1.5 rounded-md px-2.5 py-1 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                onClick={clearFilters}
+              >
+                <X className="h-3.5 w-3.5" />
+                Clear filters
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* Filters */}
-        <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <div>
-            <label className="text-xs text-muted-foreground mb-1 block">LGA</label>
-            <select className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-ring" value={filters.lga} onChange={e => update('lga', e.target.value)}>
-              <option value="all">All LGAs</option>
-              {options.lgas.map(l => <option key={l} value={l}>{l}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="text-xs text-muted-foreground mb-1 block">Sector</label>
-            <select className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-ring" value={filters.sector} onChange={e => update('sector', e.target.value)}>
-              <option value="all">All sectors</option>
-              {options.sectors.map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="text-xs text-muted-foreground mb-1 block">MDA</label>
-            <select className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-ring" value={filters.mda} onChange={e => update('mda', e.target.value)}>
-              <option value="all">All MDAs</option>
-              {options.mdas.map(m => <option key={m} value={m}>{m}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="text-xs text-muted-foreground mb-1 block">Has signals</label>
-            <select className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-ring" value={filters.hasSignals === null ? 'all' : filters.hasSignals ? 'yes' : 'no'} onChange={e => update('hasSignals', e.target.value === 'yes' ? true : e.target.value === 'no' ? false : null)}>
-              <option value="all">All projects</option>
-              <option value="yes">With signals only</option>
-              <option value="no">Without signals</option>
-            </select
-            >
-          </div>
-        </div>
-
-        {/* Sort and clear */}
+        {/* Results count */}
         <div className="mb-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Sort by:</span>
-            <select className="rounded-md border bg-background px-3 py-1 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-ring" value={filters.sortBy} onChange={e => update('sortBy', e.target.value)}>
-              <option value="id">Project ID</option>
-              <option value="title">Title</option>
-              <option value="lga">LGA</option>
-              <option value="sector">Sector</option>
-              <option value="contract_value">Contract value</option>
-              <option value="date_advert">Date of advert</option>
-            </select
-            >
-            <button className="rounded-md border bg-background px-2 py-1 text-sm hover:bg-muted focus:outline-none focus:ring-1 focus:ring-ring" onClick={() => update('sortDir', filters.sortDir === 'asc' ? 'desc' : 'asc')}>
-              {filters.sortDir === 'asc' ? '↑ Ascending' : '↓ Descending'}
-            </button>
-          </div>
-          {hasActiveFilters && (
-            <button className="rounded-md text-sm text-muted-foreground hover:text-foreground focus:outline-none focus:ring-1 focus:ring-ring" onClick={clearFilters}>
-              Clear filters
-            </button>
-          )}
+          <p className="text-sm text-muted-foreground">
+            Showing <span className="font-medium text-foreground">{filtered.length.toLocaleString()}</span> of {allProjects.length.toLocaleString()} projects
+          </p>
         </div>
 
         {/* Empty state */}
         {filtered.length === 0 ? (
-          <div className="rounded-lg border bg-card p-8 text-center">
-            <p className="text-muted-foreground">No projects match the current filters.</p>
-            <button className="mt-2 text-sm text-primary hover:underline" onClick={clearFilters}>Clear all filters</button>
-          </div>
+          <Card className="p-8 text-center">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+              <Search className="h-6 w-6 text-muted-foreground" />
+            </div>
+            <h3 className="mt-4 text-lg font-semibold text-foreground">No projects match</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Try adjusting your search or filter criteria.
+            </p>
+            <button
+              type="button"
+              className="mt-4 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              onClick={clearFilters}
+            >
+              Clear all filters
+            </button>
+          </Card>
         ) : (
           /* Project list */
-          <div className="space-y-2">
+          <div className="space-y-2.5">
             {filtered.map(project => (
               <Link
                 key={project.project_id}
                 href={`/projects/${project.project_id}`}
-                className="rounded-lg border bg-card p-4 hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors"
+                className="group block rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary/40 hover:bg-card/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between gap-4">
                   <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono font-medium">#{project.project_id}</span>
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <Badge variant="muted">#{project.project_id}</Badge>
                       {project.has_signals && (
-                        <span className="rounded bg-primary/10 px-1.5 py-0.5 text-xs font-medium text-primary">
+                        <Badge variant="primary">
                           {project.signal_count} signal{project.signal_count !== 1 ? 's' : ''}
-                        </span>
+                        </Badge>
+                      )}
+                      {project.contractor_count > 0 && (
+                        <Badge variant="outline">
+                          {project.contractor_count} contractor{project.contractor_count !== 1 ? 's' : ''}
+                        </Badge>
                       )}
                     </div>
-                    <h3 className="mt-1 text-sm font-medium truncate">{project.title}</h3>
-                    <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                    <h3 className="text-sm font-medium text-foreground group-hover:text-primary transition-colors truncate">
+                      {project.title}
+                    </h3>
+                    <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
                       {project.lga && <span>LGA: {project.lga}</span>}
                       {project.sector && <span>Sector: {project.sector}</span>}
                       {project.mda && <span>MDA: {project.mda}</span>}
                     </div>
                   </div>
-                  <div className="text-right">
+                  <div className="flex flex-col items-end gap-1 shrink-0">
                     {project.contract_amount != null ? (
-                      <div className="text-sm font-medium">₦{project.contract_amount.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
+                      <span className="text-sm font-semibold text-foreground">
+                        ₦{project.contract_amount.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                      </span>
                     ) : (
-                      <div className="text-sm text-muted-foreground">No contract value</div>
+                      <span className="text-sm text-muted-foreground/70">No contract value</span>
                     )}
-                    <div className="mt-0.5 text-xs text-muted-foreground">
+                    <span className="text-xs text-muted-foreground/60">
                       {project.date_of_advert ?? 'No advert date'}
-                    </div>
+                    </span>
                   </div>
                 </div>
               </Link>
