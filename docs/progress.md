@@ -1708,11 +1708,82 @@ Add population and geographic context per implementation.md section 17 (allocati
 
 ## Phase 10 — AI
 
-**Status:** NOT STARTED
+**Status:** COMPLETE
 
-## Phase 10 — AI
+**Date:** 2026-09-19
 
-**Status:** NOT STARTED
+**Commit:** 3fad5b8  
+**Message:** `phase 10: add AI evidence brief endpoint`  
+**Repository status:** CLEAN
+
+### Objective
+
+Add an AI evidence brief endpoint (`POST /api/explain`) that sends structured project evidence to an OpenAI-compatible model and returns a validated interpretation following the rules in `implementation.md`. The endpoint is optional: the application functions fully without AI.
+
+### Implementation
+
+**Endpoint:** `POST /api/explain`  
+**Request body:** `{ "project_id": "string" }`  
+**Response:** Structured JSON matching the schema defined in `implementation.md` §243–§246.
+
+**Request handling:**
+- validate `project_id` is a non-empty string (400 if not)
+- resolve the evidence object from `data/processed/evidence.json` (404 if not found)
+- construct a structured prompt from the evidence: facts, signals, unknowns, context (including Phase 9 population data), review questions, and sources
+- send to the configured AI model via OpenAI-compatible API
+
+**AI configuration:**
+- `AI_API_KEY` and `AI_MODEL` read from environment only
+- If either is missing, return 503 with `{"error": "AI evidence brief temporarily unavailable", "detail": "...", "status": 503}`
+- The application functions without AI
+
+**Model rules (from `implementation.md` §241–§242):**
+- Use only the supplied evidence
+- Never invent facts, dates, amounts, contractors, population values, releases, or sources
+- Never infer corruption, fraud, collusion, waste, political motive, or intent
+- Never produce political rankings, recommendations, or accusations
+- Unknown and unavailable fields remain unknown/unavailable
+- Distinguish recorded fact from signal from question
+
+**Response validation:**
+- Model must return JSON matching the schema: `summary`, `what_we_know`, `what_changed`, `signals`, `what_is_missing`, `questions_for_review`, `sources_used`
+- Malformed or schema-invalid output is rejected with 502
+- Invalid output is never passed through to the client
+
+**Dependencies:**
+- `openai` npm package (OpenAI SDK, works with any OpenAI-compatible endpoint)
+
+### Validation
+
+- Production build: `npm run build` passes
+- Endpoint smoke tests:
+  - Invalid project_id ("99999"): returns 404
+  - Empty project_id (""): returns 400
+  - Missing AI configuration (no .env.local): returns 503 with graceful message
+  - Bad API key: returns 503 authentication error
+- No API keys or internal prompts exposed in responses
+- `implementation.md` untouched
+
+### Files Changed
+
+- `lib/ai.ts` — AI evidence brief logic: prompt construction, OpenAI client, schema validation, error handling
+- `app/api/explain/route.ts` — Next.js API route wiring
+- `package.json` — added `openai` dependency
+
+### Files Unchanged
+
+- `implementation.md` — untouched
+- `data/processed/normalized_projects.json` — untouched
+- `data/processed/patterns.json` — untouched
+- `data/processed/signals.json` — untouched
+- `data/processed/evidence.json` — untouched
+- `data/processed/population.json` — untouched
+
+### Git
+
+**Commit:** 3fad5b8  
+**Message:** `phase 10: add AI evidence brief endpoint`  
+**Repository status:** CLEAN
 
 ---
 
