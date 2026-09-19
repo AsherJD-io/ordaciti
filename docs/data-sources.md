@@ -31,7 +31,27 @@ A working public JSON endpoint was discovered at `https://www.ocds.kdsg.gov.ng/P
 - **Status:** VERIFIED VIABLE — returns valid JSON with project records
 - **Pagination:** 230 populated pages (pages 1-230), page 231 empty. 6 records per page in a rolling-window overlap pattern.
 - **Record count:** `total` field = 1379 = exact raw record count (confirmed by full enumeration of all 230 populated pages). Distinct project IDs = **610** (measured, not estimated). ID range: 2 to 848 (ID 1 missing; 238 gaps in range).
-- **Record duplication (corrected):** Two distinct mechanisms: (a) **intra-page:** each project ID appears exactly twice on its assigned page — both copies are byte-for-byte identical; (b) **cross-page:** 116 project IDs appear on two adjacent pages (once each) — also byte-for-byte identical. No project ID has materially different records. No contractor, budget, amount, or title differences exist between any duplicates. Pattern: rolling-window pagination overlap (each page shares 3 IDs with the next page).
+- **Record duplication (reconciled after complete page-by-page analysis):**
+
+The endpoint returns records with a three-level multiplicity pattern that is more complex than simple intra-page duplication:
+
+| Multiplicity | IDs | Raw records | Description |
+|-------------|-----|-------------|-------------|
+| 1 (once) | 5 | 5 | Singleton projects |
+| 2 (twice) | 523 | 1046 | Intra-page duplicates — 2 identical copies on same page |
+| 4 (4×) | 82 | 328 | Cross-page + intra-page: 3 copies on one page + 1 on adjacent page |
+
+**Arithmetic:** 5 × 1 + 523 × 2 + 82 × 4 = 1379 ✓
+
+**Multiplicity-2 IDs (523, 85.7%):** Appear exactly twice, both on the same page. The two records are byte-for-byte identical.
+
+**Multiplicity-4 IDs (82, 13.4%):** Appear 4 times across 2 adjacent pages (3 on one page + 1 on the adjacent). Within each page, copies with the same contractor are identical. Across pages, records with different contractors differ ONLY in contractor-related fields (contractor_id, contractor, address, phone, email). All other fields (title, budget_amount, amount, date_sign, name/MDA, lga, procurement_method, etc.) are identical.
+
+**Record equality:** Verified for ALL 605 repeated ID groups. 523 groups are fully identical; 82 groups differ ONLY in contractor fields. No project ID has different title, budget, amount, dates, MDA, LGA, or procurement method.
+
+**Total field reconciliation:** Endpoint `total` = 1379 = sum of raw records (229 × 6 + 1 × 5 = 1379). Distinct IDs = 610. `total` equals raw count, NOT distinct count.
+
+**Source record identity:** Composite key of project ID + contractor.
 - **Content-Type:** Server returns `text/html` but body is valid JSON (misconfiguration).
 - **Request-method discrepancy:** The portal's JavaScript (`kaduna.js`) uses POST to a `/kadppa/` prefixed route, but that prefixed route returns HTML, not JSON. Only the non-prefixed GET route works.
 - **OCDS API endpoints:** `/api/record/{id}` and `/api/releases/{id}` remain HTTP 500.

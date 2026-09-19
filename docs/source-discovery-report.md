@@ -409,22 +409,39 @@ The portal's JavaScript (`kaduna.js`) constructs requests to a prefixed route:
 
 The **non-prefixed GET** route (`https://www.ocds.kdsg.gov.ng/Projects/fetchprojects/{page}`) is the ONLY working method. The portal's own JavaScript generates requests to a route that does not return data.
 
-**Record duplication behavior (corrected after full enumeration):**
+**Record duplication behavior (reconciled after complete page-by-page analysis):**
 
-- **Intra-page duplicates:** Each project ID appears exactly twice on its assigned page. These two records are **byte-for-byte identical** — every field (title, budget_amount, amount, year, lga, name, procurement_method, start_date, date_sign, date_updated, and all 23 fields) is identical. Verified from full JSON response on pages 1, 2, 227, 228.
-- **Cross-page duplicates:** 116 project IDs also appear on an adjacent page (once per page). These copies are also byte-for-byte identical. Verified for IDs 848 (pages 1-2), 10 (pages 227-228), and others.
-- **No project ID appears on more than two pages.**
-- **No project ID has materially different records** — no differing contractor, budget, contract amount, dates, or title between any duplicate records.
-- **Pattern:** Rolling-window pagination overlap. Each page shares 3 project IDs with the next page, shifting by 3 IDs per page step.
-- The `total` field (1379) counts RAW records including all duplicates, NOT unique projects.
+The endpoint returns records with a complex duplication pattern involving three distinct multiplicity levels:
 
-**Total vs. unique count (corrected):**
-- `total` field: 1379 (raw records — confirmed by full enumeration of all 230 populated pages)
-- Distinct project IDs: **610** (measured from complete enumeration, not estimated)
-- Actual project ID range: 2 to 848 (ID 1 missing; 238 gaps in range)
-- Max possible unique by ID range: 848
+| Multiplicity | IDs | Raw records | Description |
+|-------------|-----|-------------|-------------|
+| 1 (once) | 5 | 5 | Singleton projects, one occurrence |
+| 2 (twice) | 523 | 1046 | Intra-page duplicates only — 2 identical copies on same page |
+| 4 (4×) | 82 | 328 | Cross-page + intra-page: 3 copies on one page + 1 on adjacent page |
 
-**Disposition:** VERIFIED VIABLE. This endpoint provides a legitimate, reproducible, public access path to **610 unique Kaduna State procurement projects** across 1,379 raw records. All duplicates are exact copies; deduplication by project ID loses no information.
+**Arithmetic:** 5 × 1 + 523 × 2 + 82 × 4 = 5 + 1046 + 328 = 1379 ✓
+
+**Multiplicity-2 IDs (523, 85.7%):** These project IDs appear exactly twice, both times on the same page. The two records are byte-for-byte identical — every field matches.
+
+**Multiplicity-4 IDs (82, 13.4%):** These project IDs appear 4 times across 2 adjacent pages. Pattern: 3 occurrences on one page + 1 occurrence on the adjacent page. Within each page, the 3 copies are byte-for-byte identical. Across pages, records with the same contractor are identical; records with different contractors differ ONLY in contractor-related fields (contractor_id, contractor, address, phone, email). All other fields (title, budget_amount, amount, date_sign, name/MDA, lga, procurement_method, start_date, year, etc.) are identical.
+
+**Cross-page overlap:** 116 IDs appear on 2 adjacent pages. Overlap between consecutive pages involves exactly 1 shared ID per overlapping transition (116 such transitions). 0 IDs appear on non-adjacent pages.
+
+**Record equality (verified for ALL 605 repeated ID groups):**
+- Identical duplicate groups: 523 (all records identical)
+- Differing duplicate groups: 82 (differ ONLY in contractor-related fields)
+
+**Fields that NEVER differ:** title, budget_amount, amount, date_sign, name (MDA), lga, procurement_method, start_date, year, project_category, category, period, bid_open_start, award_criteria.
+
+**Fields that sometimes differ (82 groups):** contractor_id (82), contractor (82), address (82), phone (82), email (60).
+
+**Total field reconciliation:**
+- Endpoint `total` = 1379 (verified constant across all pages)
+- Sum of page raw counts = 1379 (229 × 6 + 1 × 5 = 1379)
+- Measured distinct IDs = 610
+- `total` EQUALS raw record count, NOT distinct count
+
+**Source record identity:** Composite key of project ID + contractor. Each project ID is one procurement project that may have multiple contractors. Non-contractor fields are identical across all records for a project ID.
 
 **Field coverage against Ordaciti canonical schema (implementation.md section 8):**
 

@@ -671,36 +671,83 @@ The endpoint is: `https://www.ocds.kdsg.gov.ng/Projects/fetchprojects/{page_numb
 | Page 230 | `/Projects/fetchprojects/230` | 200 | JSON with data (IDs 2, 3) |
 | Page 231 | `/Projects/fetchprojects/231` | 200 | Empty data array (last page) |
 
-**Pagination characteristics (corrected after full enumeration):**
+**Pagination characteristics (reconciled after complete page-by-page analysis):**
 
-- `total` field reports 1379 (cross-verified: raw records retrieved = 1379 across all 230 populated pages)
-- Each page returns 6 records; each project ID appears exactly twice on its page (intra-page duplicate)
-- **116 project IDs also appear on an adjacent page** (cross-page duplicate) — each once per page
-- **610 distinct project IDs** across 1379 raw records
+- `total` field reports 1379 in every response; this equals the sum of raw records across all 230 populated pages (independently verified: sum of page raw counts = 1379)
+- 230 populated pages (pages 1-230), 1 empty page (page 231)
+- 229 pages contain 6 records; page 230 contains 5 records
+- 610 distinct project IDs across 1379 raw records
 - ID range: 2 to 848; ID 1 is missing; 238 gaps exist within the 1-848 range
 - Data is sequential by project ID in descending order
 
-**Duplicate classification (verified from full records):**
+**Exact multiplicity distribution (from complete enumeration):**
 
-- **Intra-page duplicates:** Each project ID appears exactly twice on its assigned page. These two records are **byte-for-byte identical** — every field including title, MDA, budget, contract amount, dates, procurement method, and contractor is identical.
-- **Cross-page duplicates:** 116 project IDs appear on two adjacent pages (once each). These copies are also **byte-for-byte identical**.
-- **No project ID appears on more than two pages.**
-- **No project ID has materially different records** — all duplicates are exact copies.
-- **Pattern:** This is a rolling-window pagination overlap. Each page shares 3 project IDs with the next page. The overlap shifts by 3 IDs per page step.
+| Multiplicity | Number of IDs | Percentage |
+|-------------|---------------|------------|
+| 1 (appears once) | 5 | 0.8% |
+| 2 (appears twice) | 523 | 85.7% |
+| 4 (appears 4 times) | 82 | 13.4% |
+| 3 or other | 0 | 0% |
 
-**Total field reconciliation:**
-- Endpoint `total` = 1379 = exact raw record count (confirmed by full enumeration)
-- Distinct project count = 610 (measured, not estimated)
-- `total` does NOT equal distinct project count
-- `total` counts every row in the `data` array, including intra-page and cross-page duplicates
+Arithmetic verification: 5 × 1 + 523 × 2 + 82 × 4 = 5 + 1046 + 328 = 1379 ✓
+
+**Duplicate structure (two distinct mechanisms):**
+
+The previous report incorrectly described a single "intra-page twice + cross-page once" pattern. The actual data reveals three multiplicity levels:
+
+**A. Multiplicity-2 IDs (523 IDs, 85.7%):**
+- Appear exactly twice, both occurrences on the same page
+- These are intra-page duplicates only — no cross-page presence
+- The two records are byte-for-byte identical (verified for sample IDs: 848, 847, 846, 10, 133)
+
+**B. Multiplicity-4 IDs (82 IDs, 13.4%):**
+- Appear 4 times across exactly 2 adjacent pages
+- Pattern: 3 occurrences on one page + 1 occurrence on the adjacent page
+- 71 IDs follow "3x on page N, 1x on page N+1" pattern
+- 11 IDs follow "1x on page N, 3x on page N+1" pattern
+- These IDs appear in the transition zone between pages with 3-distinct and 2-distinct ID counts
+
+**C. Multiplicity-1 IDs (5 IDs, 0.8%):**
+- Appear exactly once, on one page only
+
+**Cross-page overlap analysis:**
+- 116 IDs appear on 2 adjacent pages (overlap of exactly 1 ID between page N and N+1)
+- 0 IDs appear on non-adjacent pages
+- 0 IDs appear on more than 2 pages
+- Overlap size between consecutive pages: 116 transitions have overlap of 1; all other transitions have overlap of 0
+
+**Record equality (verified for ALL 605 repeated ID groups):**
+
+| Category | Count | Details |
+|----------|-------|---------|
+| Identical duplicate groups | 523 | All records byte-for-byte identical |
+| Differing duplicate groups | 82 | Differ ONLY in contractor-related fields |
+
+**Differing fields (82 groups, all contractor-related):**
+
+| Field | Groups affected |
+|-------|----------------|
+| contractor_id | 82 |
+| contractor | 82 |
+| address | 82 |
+| phone | 82 |
+| email | 60 |
+
+**Fields that NEVER differ between duplicates:**
+- title, budget_amount, amount (contract_amount), date_sign, award_date, name (MDA), lga, procurement_method, start_date, year, project_category, category, period, bid_open_start, awarded_criteria — all identical across all records for the same project ID
+
+**No project ID has different titles, budget amounts, contract amounts, dates, MDAs, LGAs, or procurement methods.** The only variation is in contractor identity.
 
 **Source record identity for Phase 3 ingestion:**
-- **Primary key: project ID** — each distinct integer ID represents one unique project
-- Deduplication method: retain one record per project ID (any copy suffices; all are identical)
-- No need for composite keys: contractor, amount, dates, titles do not differ between duplicate records
-- Cross-page duplicates are exact copies — no information loss from deduplication
 
-**Field coverage unchanged from Phase 2B:** 14 fields available, 2 derivable, 8 not available (ocid, description, latitude, longitude, status, source_release_id). Repeated records do NOT introduce conflicting values — duplicates are identical.
+The correct source-level entity is a **composite of project ID + contractor** (or equivalently, project ID with contractor fields stored as a list). Each project ID represents one procurement project but may have multiple contractors. The non-contractor fields are identical across all records for a given project ID, so no information is lost by grouping by project ID alone for non-contractor analysis.
+
+**Total field reconciliation:**
+- Endpoint `total` = 1379 (constant across all pages)
+- Sum of page raw counts = 1379 (independently verified: 229 × 6 + 1 × 5 = 1379)
+- Measured distinct IDs = 610
+- Endpoint `total` EQUALS raw record count, NOT distinct count
+- Arithmetic: 5 × 1 + 523 × 2 + 82 × 4 = 1379 ✓
 
 **Project 255:** REJECTED AS PRIMARY DATASET (unchanged).
 
