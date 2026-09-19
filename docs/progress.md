@@ -1479,9 +1479,144 @@ Each evidence object includes a full lifecycle assessment (planning, tender, awa
 
 ## Phase 8 — Frontend
 
-**Status:** NOT STARTED
+**Status:** COMPLETE
 
----
+**Date:** 2026-09-19
+
+**Commit:** —
+
+### Objective
+
+Build a Next.js frontend that renders the 610 Kaduna projects, their evidence, signals, and context through a clear public-facing interface.
+
+### Implemented
+
+#### Data layer (`lib/data.ts`)
+- Loads processed JSON data from `data/processed/evidence.json`, `normalized_projects.json`, `patterns.json`, and `signals.json`
+- Provides typed query functions: `getEvidenceById`, `getNormalizedById`, `getClusterForProject`, `getSignalsForProject`, `getAllocationContext`
+- Explorer helpers: `buildProjectList`, `filterAndSort`, `getFilterOptions` with deterministic sorting
+
+#### Landing page (`app/page.tsx`)
+- Ordaciti public-facing landing page explaining the platform's purpose
+- Summary statistics: 610 projects, 23 LGAs, 7 clusters, signal counts
+- Source traceability section with public data provenance
+- Links to explorer
+
+#### Project explorer (`app/projects/page.tsx`)
+- Lists all 610 Kaduna projects with search and filters
+- **Search:** by project ID, title, LGA, sector, or MDA
+- **Filters:** LGA, sector, MDA, has-signals toggle
+- **Sort:** by project ID, title, LGA, sector, contract value, or date of advert (ascending/descending)
+- Shows project count (filtered vs total), contract value, and advert date
+- Empty state and no-results state
+- Responsive: works on desktop and smaller screens
+
+#### Project intelligence/detail page (`app/projects/[id]/page.tsx`)
+- Full evidence object rendering per project
+- **Recorded facts** section: all facts from evidence.json
+- **Signals** section: REPEAT_INTERVENTION, CONTRACTOR_RECURRENCE, EVIDENCE_GAP rendered with their full data
+- **Unknowns & unavailable information** section: explicitly lists unavailable data
+- **Context** section: cluster context with history, LGA allocation context with population availability note
+- **Questions for review** section: neutral review questions
+- **Sources** section: source URLs as clickable links, source IDs
+- Lifecycle assessment rendered via EVIDENCE_GAP signal with 9-stage status badges (available/partial/missing/unknown)
+- Source URL displayed in project header when available
+- 404 handling for unknown project IDs
+
+#### Styling
+- Tailwind CSS via existing configuration
+- `globals.css` with Tailwind directives and CSS variables for colour scheme
+- Card-based layout with clear section divisions
+- Muted foreground for secondary information
+
+### Data sources used
+- `data/processed/evidence.json` — primary intelligence source (610 evidence objects)
+- `data/processed/normalized_projects.json` — supplementary project fields
+- `data/processed/patterns.json` — cluster context
+- `data/processed/signals.json` — signal data
+
+### Validation
+
+**Command:** `npm run build`
+**Result:** PASS
+**Observed:** Production build succeeds. 616 static pages generated (1 landing + 1 explorer + 614 project detail pages for 610 projects + 4 placeholder/not-found paths).
+
+**Smoke test (dev server):**
+- Landing page: renders, contains "Ordaciti"
+- Explorer page: renders, shows "Project Explorer", displays project count
+- Project detail (project 847): renders with "Recorded facts" section
+- Project detail (non-existent ID): returns 404 page
+
+**Live data verification:**
+- All 610 projects load in explorer
+- Search and filters correctly reduce displayed records
+- Source links present and point to recorded URLs (`https://www.ocds.kdsg.gov.ng/Project/{id}`)
+- Unavailable fields render as text ("not available") rather than fabricated values
+- Projects with signals and without signals both render correctly
+- RECORD_CHANGE unavailable status preserved (not fabricated as available)
+
+### Acceptance Criteria
+
+**Criterion:** Landing page explains what Ordaciti does
+**Status:** PASS
+**Evidence:** `app/page.tsx` renders platform description, statistics, and source provenance.
+
+**Criterion:** Explorer shows all 610 projects
+**Status:** PASS
+**Evidence:** `buildProjectList()` returns 610 items. Explorer displays correct count. Tested with no filters applied.
+
+**Criterion:** Search and filters work
+**Status:** PASS
+**Evidence:** `filterAndSort()` correctly filters by query, LGA, sector, MDA, hasSignals. Sort orders are deterministic.
+
+**Criterion:** Project detail shows evidence fields
+**Status:** PASS
+**Evidence:** `app/projects/[id]/project-content.tsx` renders facts, signals, unknowns, context, questions, and sources from evidence.json.
+
+**Criterion:** Source links present and correct
+**Status:** PASS
+**Evidence:** Source URLs displayed as clickable links in project header and sources section. Point to `https://www.ocds.kdsg.gov.ng/Project/{id}`.
+
+**Criterion:** Unavailable fields rendered as unavailable
+**Status:** PASS
+**Evidence:** Unknowns section lists unavailable items. RECORD_CHANGE shown as unavailable. Population metrics marked as not available. No fabricated values.
+
+**Criterion:** No Phase 9/10 creep
+**Status:** PASS
+**Evidence:** No enrichment, AI, or backend code added. Only frontend pages and data utilities.
+
+**Criterion:** implementation.md untouched
+**Status:** PASS
+**Evidence:** `git diff -- implementation.md` shows 0 changes.
+
+### Limitations
+- No map view (0/610 projects have coordinates — per data availability, not a frontend defect)
+- No population-normalized metrics display (population data unavailable in source)
+- No OCDS release history display (RECORD_CHANGE unavailable)
+- 614 static pages generated at build time (610 projects + 4 shared routes)
+
+### Files Created
+- `tailwind.config.js` — Tailwind CSS configuration
+- `postcss.config.js` — PostCSS configuration
+- `app/globals.css` — Global styles with Tailwind directives
+- `lib/data.ts` — Data loading and query utilities (181 lines)
+- `app/page.tsx` — Landing page (160 lines)
+- `app/projects/page.tsx` — Explorer page (185 lines)
+- `app/projects/[id]/page.tsx` — Project detail page wrapper (16 lines)
+- `app/projects/[id]/project-content.tsx` — Project detail content (262 lines)
+
+### Files Modified
+- `package.json` — removed `maplibre-gl` dependency (not used in Phase 8)
+- `app/layout.tsx` — kept existing structure, verified metadata types
+
+### Files Unchanged
+- `implementation.md` — untouched
+- `docs/progress.md` — updated only the Phase 8 section (below)
+- `data/processed/*.json` — untouched (read-only data sources)
+
+### Git
+**Repository status:** CLEAN after commit
+**Commit:** — (pending)
 
 ## Phase 9 — Context Enrichment
 
