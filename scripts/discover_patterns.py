@@ -478,6 +478,7 @@ def extract_clusters(projects, uf, pairs):
                     "project_id_b": projects[j]["project_id"],
                     "similarity_score": score,
                     "matching_features": features,
+                    "is_cluster_link": True,
                 })
         cluster_pairs[cluster_id] = cpairs
 
