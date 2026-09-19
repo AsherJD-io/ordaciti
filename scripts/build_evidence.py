@@ -224,9 +224,22 @@ def _build_signals(pid: str, proj: dict, signals_data: dict) -> list[dict]:
                     "latest_project_date": sig.get("latest_project_date"),
                 })
 
-        # RECORD_CHANGE: unavailable — include for traceability
+        # RECORD_CHANGE: unavailable — only include if signals.json explicitly
+        # references this project. The Phase 6 RECORD_CHANGE signal is global
+        # (no project-specific reference), so it must NOT be attached as a
+        # project signal. The limitation is preserved in unknowns/context.
         if sig.get("signal_type") == "RECORD_CHANGE":
-            if sig.get("unavailable"):
+            # Check whether this signal references a specific project
+            sig_project_refs = []
+            sig_pids = sig.get("project_ids", [])
+            if sig_pids:
+                sig_project_refs = [str(p) for p in sig_pids]
+            # Also check project_id field
+            sig_proj_id = sig.get("project_id")
+            if sig_proj_id and str(sig_proj_id) == pid:
+                sig_project_refs.append(str(sig_proj_id))
+
+            if pid in sig_project_refs:
                 refs_pid = True
                 signals.append({
                     "type": "RECORD_CHANGE",
@@ -249,11 +262,27 @@ def _build_signals(pid: str, proj: dict, signals_data: dict) -> list[dict]:
                     "population_data_available": sig.get("population_data_available", False),
                 })
 
-    # Deduplicate signals by type+key
+    # Deduplicate signals: keep distinct analytical signals.
+    # For CONTRACTOR_RECURRENCE, each contractor is a distinct signal.
+    # For REPEAT_INTERVENTION, each cluster is a distinct signal.
+    # For ALLOCATION_CONTEXT, the LGA match is a single signal per project.
+    # For EVIDENCE_GAP and RECORD_CHANGE, one per project max.
     seen: set[tuple] = set()
     unique: list[dict] = []
     for s in signals:
-        key = (s["type"], s.get("source"))
+        st = s["type"]
+        if st == "CONTRACTOR_RECURRENCE":
+            # Key on contractor name — each contractor is distinct
+            key = (st, s.get("contractor", ""))
+        elif st == "REPEAT_INTERVENTION":
+            # Key on cluster_id — each cluster is distinct
+            key = (st, str(s.get("cluster_id")))
+        elif st == "ALLOCATION_CONTEXT":
+            # Key on LGA — one allocation context per project
+            key = (st, str(s.get("lga")))
+        else:
+            # EVIDENCE_GAP, RECORD_CHANGE: one per project
+            key = (st, pid)
         if key not in seen:
             seen.add(key)
             unique.append(s)
