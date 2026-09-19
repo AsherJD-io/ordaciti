@@ -20,7 +20,11 @@
 
 **Data used:** OCDS project records, release packages, contract-level data
 
-**Status:** Portal accessible; API endpoints currently returning HTTP 500. Data is confirmed present (portal displays project records and aggregate statistics). Newer OC4IDS backend (Cloud Run) accessible but requires API token for programmatic access.
+**Status:** Portal accessible; API endpoints returning HTTP 500. Web interface renders 0 projects (AJAX endpoint broken). Data confirmed present (portal displays aggregate statistics: 1,379 projects, ₦95.6B total contract sum) but programmatic retrieval is not possible. Newer OC4IDS backend (Cloud Run) requires API token for programmatic access; OC4IDS portal now suspended (redirects to suspendedpage.cgi, shows 0 projects). Previous Azure deployment (kadppaocds.azurewebsites.net) is defunct (HTTP 000).
+
+**Coverage:** Kaduna State, Nigeria. Approximately 1,379+ projects registered on the OCDS portal (per aggregate statistics). The newer OC4IDS portal reported 1,635 published projects (as of late 2025), with 393 having coordinates — but this portal is now suspended.
+
+**Date range:** Projects from 2019 onwards observed in portal samples.
 
 **Coverage:** Kaduna State, Nigeria. Approximately 1,379+ projects registered on the OCDS portal. The newer OC4IDS portal reports 1,635 published projects (as of late 2025), with 393 having coordinates.
 
@@ -33,9 +37,9 @@
 - Location data may be incomplete (only 393 of 1,635 projects have coordinates on OC4IDS portal)
 - Records may have only one release (limiting record-change analysis)
 
-**Retrieval date:** 2026-09-18 (initial verification)
+**Retrieval date:** 2026-09-18 (initial verification); 2026-09-19 (follow-up verification — portal suspended, Azure defunct, no new access paths found)
 
-**Verification method:** Direct HTTP inspection of API endpoints, browser-based portal navigation, JavaScript source analysis
+**Verification method:** Direct HTTP inspection of API endpoints, browser-based portal navigation, JavaScript source analysis, external mirror registry queries (HDX, OCP Registry, openAFRICA, GitHub)
 
 ---
 

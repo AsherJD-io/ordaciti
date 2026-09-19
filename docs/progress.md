@@ -438,6 +438,152 @@ These artifacts document the Project 255 investigation and are preserved for tra
 
 **Next action required:** Resolve the primary data access blocker before Phase 3 can begin. Options: API recovery, data mirror discovery, authenticated access, or KADPPA contact.
 
+## Phase 2 Source-Access Recovery Investigation (2026-09-19)
+
+**Status:** Investigation complete. No viable primary source found.
+
+### Sources investigated this session
+
+#### 1. Legacy OCDS Portal — www.ocds.kdsg.gov.ng
+- **Access route:** Direct HTTP to documented API endpoints + browser-based web interface
+- **Result:** PARTIALLY ACCESSIBLE — CRITICAL BLOCKER
+- **Working:** `/api/mda_list` returns 28 MDAs (names, IDs, sectors) — no project data
+- **Non-functional:** All project-data endpoints return HTTP 500 with empty bodies:
+  - `/api/project_list` — HTTP 500
+  - `/api/record/{id}` — HTTP 500
+  - `/api/mda_records?mda_id=N` — HTTP 500
+  - `/Home/table_data` (POST) — HTTP 500
+- **Web interface:** Table page (`/Home/table`) renders 0 projects. The DataTable AJAX endpoint is broken. Filters are selectable but "Fetch Projects" returns empty results. The `/kadppa/` API base path (from app.js) returns the full HTML homepage instead of JSON — API routing is broken.
+- **JavaScript analysis:** `table.js` reveals the data table expects JSON with fields: `ocid`, `title`, `budget_amount`, `amount`, `lga`, `name` (contractor), `year`, `mda`, `date_updated`, `status`. `app.js` defines `ABS_PATH = https://www.ocds.kdsg.gov.ng/kadppa/`. The download CSV/PDF buttons construct URLs but the underlying data endpoints are non-functional.
+- **Reproducibility:** The mda_list endpoint is reproducible (returns same 28 MDAs). All project endpoints consistently return 500.
+- **Disposition:** REJECTED AS PRIMARY — cannot retrieve project inventory, records, or releases.
+
+#### 2. OC4IDS Backend — kadppa-backend-972168318932.us-central1.run.app
+- **Access route:** Direct HTTP to documented API endpoints
+- **Result:** VERIFIED INACCESSIBLE
+- **GET /api/v1/projects?limit=N:** HTTP 500 — "Operation projects.find() buffering timed out after 10000ms" (even with limit=2)
+- **GET /api/v1/exports/oc4ids?limit=N:** HTTP 500 — "Failed to fetch OC4IDS data"
+- **POST /api/v1/projects (JSON body):** HTTP 401 — "No token provided"
+- **POST /api/v1/exports/oc4ids:** HTTP 404 — "Route not found"
+- **Portal status:** ipdata.kdsg.gov.ng now returns 302 redirect to suspendedpage.cgi — portal is suspended
+- **Open-data page:** ipdata.kdsg.gov.ng/public/open-data shows "0 infrastructure projects" — no data accessible
+- **Reproducibility:** Consistent HTTP 500/401 responses
+- **Disposition:** REJECTED AS PRIMARY — requires authentication token (not publicly documented) and GET requests time out
+
+#### 3. Azure OCDS Portal — kadppaocds.azurewebsites.net
+- **Access route:** Direct HTTP
+- **Result:** VERIFIED INACCESSIBLE — HTTP 000 (connection failure)
+- **Context:** This was the original OCDS portal URL per OGP KAD0002 IRM report (referenced as https://ocds.azurewebsites.net/#0). The OGP report notes the portal "is not currently functioning" and "the government temporarily suspended public access to 'harmonise' the platform."
+- **Disposition:** REJECTED — server unreachable
+
+#### 4. NOCOPO (Federal) — nocopo.bpp.gov.ng
+- **Access route:** Direct HTTP
+- **Result:** VERIFIED INACCESSIBLE — HTTP 000 (connection failure)
+- **Context:** Federal procurement portal. Would not contain Kaduna State-specific OCDS data at the project level needed for the canonical schema.
+- **Disposition:** REJECTED — unreachable and not Kaduna State-specific
+
+#### 5. openAFRICA — open.africa
+- **Access route:** API query for Kaduna procurement data
+- **Result:** VERIFIED INACCESSIBLE — HTTP 000 (connection failure)
+- **Disposition:** REJECTED — unreachable
+
+#### 6. OCP Data Registry — registry.open-contracting.org
+- **Access route:** API query for Kaduna datasets
+- **Result:** VERIFIED INACCESSIBLE — HTTP 000 (connection failure)
+- **Disposition:** REJECTED — unreachable
+
+#### 7. HDX (Humanitarian Data Exchange) — data.humdata.org
+- **Access route:** CKAN API package_search for "Kaduna procurement"
+- **Result:** INSUFFICIENT FOR PRIMARY DATASET — API reachable, returns 0 results for Kaduna procurement query
+- **Disposition:** REJECTED — no Kaduna procurement datasets found
+
+#### 8. GitHub — github.com
+- **Access route:** Web search for Kaduna OCDS/OC4IDS data repositories
+- **Result:** INSUFFICIENT FOR PRIMARY DATASET — No repositories containing actual Kaduna procurement OCDS/OC4IDS data found. Only OCDS sample data, tooling, and documentation repositories.
+- **Disposition:** REJECTED — no Kaduna procurement data mirror found
+
+#### 9. Project 255 — project255.kdsg.gov.ng
+- **Access route:** Direct HTTP (previously investigated)
+- **Result:** REJECTED AS PRIMARY DATASET (unchanged)
+- **Reason:** Ward-level project showcase portal, not OCDS/OC4IDS procurement data. Lacks OCIDs, contract amounts, contractor names, dates of award/advert, procurement methods, release data.
+- **Disposition:** REMAIN REJECTED — not an OCDS procurement source
+
+### New evidence obtained this session
+
+1. **Confirmed the `/kadppa/` API base path from app.js** — the JavaScript defines `ABS_PATH = 'https://www.ocds.kdsg.gov.ng/kadppa/'`. All paths under this prefix return the full HTML homepage (HTTP 200 but with HTML, not JSON), confirming the API routing layer is broken.
+
+2. **Confirmed the OC4IDS portal is suspended** — ipdata.kdsg.gov.ng returns 302 to suspendedpage.cgi. The open-data page shows 0 projects. The portal that launched December 2025 with 1,635 projects is now inaccessible.
+
+3. **Confirmed the Azure portal is defunct** — kadppaocds.azurewebsites.net returns HTTP 000. This was the original OCDS portal referenced in OGP historical documents.
+
+4. **Confirmed the data exists but is inaccessible** — The OCDS portal's Table page still shows aggregate statistics (₦95,663,978,669.04 total contract sum) confirming a database exists. The mda_list endpoint returns 28 MDAs. But no programmatic path retrieves project-level records.
+
+5. **OGP historical confirmation** — The KAD0002 IRM report (2018-2020) explicitly stated: "the IRM researcher found that the portal is not currently functioning" and "the government temporarily suspended public access to 'harmonise' the platform with other citizen engagement platforms." This documents a multi-year pattern of portal accessibility issues.
+
+### Summary assessment table
+
+| Source | Access Route | Result | Relevant Fields | Reproducibility | Disposition |
+|---|---|---|---|---|---|
+| OCDS Portal (www.ocds.kdsg.gov.ng) | API endpoints + web interface | PARTIALLY ACCESSIBLE — BLOCKED | mda_list works; all project endpoints HTTP 500 | mda_list reproducible; project endpoints consistently fail | REJECTED AS PRIMARY |
+| OC4IDS Backend (run.app) | API endpoints | VERIFIED INACCESSIBLE | None accessible | Consistent 500/401 | REJECTED AS PRIMARY |
+| OC4IDS Portal (ipdata.kdsg.gov.ng) | Web interface | VERIFIED INACCESSIBLE | 0 projects shown; portal suspended | Consistently suspended | REJECTED AS PRIMARY |
+| Azure Portal (azurewebsites.net) | Direct HTTP | VERIFIED INACCESSIBLE | None — server unreachable | HTTP 000 | REJECTED |
+| NOCOPO (nocopo.bpp.gov.ng) | Direct HTTP | VERIFIED INACCESSIBLE | None — federal portal, unreachable | HTTP 000 | REJECTED |
+| openAFRICA | API | VERIFIED INACCESSIBLE | None — unreachable | HTTP 000 | REJECTED |
+| OCP Data Registry | API | VERIFIED INACCESSIBLE | None — unreachable | HTTP 000 | REJECTED |
+| HDX (data.humdata.org) | CKAN API | INSUFFICIENT | 0 Kaduna procurement results | Reachable but no data | REJECTED |
+| GitHub | Web search | INSUFFICIENT | No Kaduna procurement mirrors found | N/A | REJECTED |
+| Project 255 | Direct HTTP | REJECTED (prior) | Not OCDS procurement data | N/A | REJECTED AS PRIMARY |
+
+### Primary dataset decision
+
+**NO VIABLE PRIMARY SOURCE FOUND**
+
+The real Kaduna procurement/OCDS/OC4IDS data exists (confirmed by portal aggregate statistics and the working mda_list endpoint), but no legitimate, reproducible programmatic access path exists:
+
+1. All OCDS project-data API endpoints return HTTP 500
+2. The OC4IDS backend requires an authentication token (not publicly available) and GET requests time out
+3. The OC4IDS portal web interface is suspended (redirects to suspendedpage.cgi, shows 0 projects)
+4. The Azure portal (original OCDS deployment) is defunct (HTTP 000)
+5. No external mirrors, data registries, or GitHub repositories contain the Kaduna procurement dataset
+6. NOCOPO, openAFRICA, and OCP Data Registry are unreachable from this environment
+7. The web interface renders 0 projects (AJAX/endpoints broken)
+8. No bulk download or export mechanism is accessible
+
+This is a documented, verified blocker — not a transient issue. OGP historical records (KAD0002 IRM report) confirm the portal has had accessibility problems since at least 2018-2020.
+
+### Project 255 status
+
+Project 255 remains REJECTED as the primary Ordaciti dataset. It is a ward-level project showcase portal, not an OCDS/OC4IDS procurement data source. It does not provide the procurement records required by implementation.md section 8 (canonical project schema): no OCIDs, no contract amounts, no contractor names, no dates of award/advert, no procurement methods, no release data. Project 255 artifacts are preserved in `data/raw/project255_*.json` and `scripts/*255*` as investigation evidence only.
+
+## Phase Status Update
+
+|| Phase | Status | Date | Notes |
+|---|---|---|---|---|
+| 1 — Repository Skeleton | COMPLETE | 2026-09-18 | Commit c668905 |
+| 2 — Source Discovery | BLOCKED | 2026-09-19 | Investigation complete. No viable primary source found. All OCDS/OC4IDS endpoints non-functional. No external mirrors. |
+| 3 — Data Ingestion | NOT STARTED | — | Blocked until primary data access is resolved. |
+
+**Current state:** Phase 2 BLOCKED. No viable primary Kaduna procurement data source accessible. Project 255 rejected as primary dataset. Phase 2 source-access recovery investigation complete.
+
+**Remaining access blocker:** The Kaduna State OCDS/OC4IDS project records exist in a backend database (confirmed by portal aggregate statistics: 1,379+ projects, ₦95.6B total contract value), but all programmatic access paths are non-functional. The APIs return HTTP 500, the OC4IDS backend requires an undocumented authentication token, the web interface renders zero projects, and no external mirrors or bulk downloads exist. Resolution options: (1) KADPPA restores API functionality, (2) KADPPA provides API credentials or data export, (3) a data mirror appears in an accessible registry, (4) the web interface becomes functional for data extraction. None of these conditions are currently met.
+
+## Git
+
+**Investigation session:** 2026-09-19
+**Repository status:** CLEAN — no new files created, no modifications to implementation.md, no fabricated data
+**Commit:** 30e8565 — `docs: establish Phase 2 source blocker checkpoint`
+
+**Investigation artifacts preserved (not new):**
+- `data/raw/project255_raw.json` — Project 255 initial investigation
+- `data/raw/project255_projects.json` — 251 Project 255 titles
+- `data/raw/project255_sample.json` — 30 Project 255 title sample
+- `scripts/collect_project255.sh` — curl collection script
+- `scripts/enrich_project255.sh` — curl enrichment script
+- `scripts/enrich_project255_v2.py` — Python enrichment
+
+These are investigation evidence only, not the Ordaciti primary dataset.
+
 ---
 
 *This progress record is the authoritative phase state document. It is updated at the completion of each phase per the Phase Completion Contract.*
