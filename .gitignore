@@ -36,10 +36,22 @@ Thumbs.db
 tmp/
 temp/
 
-# Generated datasets
+# Generated datasets — raw source data and unsupported outputs stay ignored
 data/raw/
-data/processed/
 data/AI_cache/
+
+# Processed datasets required for deployment
+# Pattern: ignore all files in data/processed/, then un-ignore the four required ones
+data/processed/*
+!data/processed/evidence.json
+!data/processed/normalized_projects.json
+!data/processed/patterns.json
+!data/processed/signals.json
+
+# Other processed outputs (not required at build time) — stay ignored
+data/processed/ingestion_validation.json
+data/processed/population.json
+data/processed/projects.json
 
 # Generated media
 public/screenshots/generated/
