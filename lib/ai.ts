@@ -376,19 +376,34 @@ export async function explainProject(request: ExplainRequest, forceRefresh = fal
       return { error: 'AI model not configured', status: 503, detail: 'AI_MODEL environment variable is not set.' }
     }
 
-    const response = await client.chat.completions.create({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response = await (client.chat.completions.create as any)({
       model,
       messages: [
         { role: 'system', content: 'You are Ordaciti, a public-decision intelligence assistant. Follow the rules in the user message exactly.' },
         { role: 'user', content: userMessage },
       ],
       temperature: 0.3,
-      max_tokens: 2048,
+      max_tokens: 4096,
       response_format: { type: 'json_object' },
+      // OpenRouter-native reasoning control for Qwen3.6 Flash.
+      // The OpenAI SDK types lag behind OpenRouter's supported params, so we cast the call.
+      reasoning: { effort: 'none' },
     })
 
     const raw = response.choices[0]?.message?.content
     if (!raw) {
+      const finishReason = response.choices[0]?.finish_reason
+      const usage = response.usage
+      console.error(
+        '[ai.explain] Empty model response for project_id=%s model=%s finish_reason=%s prompt_tokens=%s completion_tokens=%s total_tokens=%s',
+        trimmedId,
+        model,
+        finishReason ?? 'unknown',
+        usage?.prompt_tokens ?? 'unknown',
+        usage?.completion_tokens ?? 'unknown',
+        usage?.total_tokens ?? 'unknown',
+      )
       return { error: 'AI response empty', status: 502, detail: 'The model returned an empty response.' }
     }
 
