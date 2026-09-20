@@ -3,7 +3,7 @@
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, ExternalLink, Building2, MapPin, FileText, AlertTriangle, HelpCircle, Layers } from 'lucide-react'
-import { getEvidenceById, getNormalizedById, getClusterForProject, getSignalsForProject, getAllocationContext } from '@/lib/data'
+import { getEvidenceById, getNormalizedById, getClusterForProject, getSignalsForProject } from '@/lib/data'
 import { Card, CardContent } from '@/components/Card'
 import { Badge } from '@/components/Badge'
 import { SectionHeader } from '@/components/SectionHeader'
@@ -20,7 +20,6 @@ export default function ProjectContent() {
   const normalized = getNormalizedById(id)
   const cluster = getClusterForProject(id)
   const signals = getSignalsForProject(id)
-  const allocation = getAllocationContext(normalized?.normalized_lga ?? '')
 
   if (!project) {
     return (
@@ -337,7 +336,67 @@ export default function ProjectContent() {
                       </SignalCard>
                     )
                   }
-                  default:
+                  case 'ALLOCATION_CONTEXT': {
+                    const lga = (d.lga as string) ?? 'Unknown LGA'
+                    const lgaProjectCount = d.lga_project_count as number | undefined
+                    const lgaRecordedValue = d.lga_recorded_contract_value as number | undefined
+                    const popAvailable = d.population_data_available as boolean | undefined
+                    return (
+                      <SignalCard key={idx} type={signal.type} title="Allocation context">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Badge variant="muted">
+                            {lgaProjectCount != null ? `${lgaProjectCount} project${lgaProjectCount !== 1 ? 's' : ''}` : 'Local government area'}
+                          </Badge>
+                          {lgaRecordedValue != null && (
+                            <Badge variant="outline">
+                              N{lgaRecordedValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="rounded-lg bg-muted/30 px-3 py-2">
+                          <p className="text-sm text-muted-foreground">
+                            <span className="font-medium text-foreground">{lga}</span>
+                          </p>
+                        </div>
+                        {popAvailable != null && (
+                          <p className="mt-2 text-xs text-muted-foreground">
+                            Population data: {popAvailable ? 'available' : 'not available — population-normalized metrics not computed'}
+                          </p>
+                        )}
+                      </SignalCard>
+                    )
+                  }
+                  case 'ALLOCATION_CONTEXT': {
+                  const lga = (d.lga as string) ?? 'Unknown LGA'
+                  const lgaProjectCount = d.lga_project_count as number | undefined
+                  const lgaRecordedValue = d.lga_recorded_contract_value as number | undefined
+                  const popAvailable = d.population_data_available as boolean | undefined
+                  return (
+                    <SignalCard key={idx} type={signal.type} title="Allocation context">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Badge variant="muted">
+                          {lgaProjectCount != null ? `${lgaProjectCount} project${lgaProjectCount !== 1 ? 's' : ''}` : 'Local government area'}
+                        </Badge>
+                        {lgaRecordedValue != null && (
+                          <Badge variant="outline">
+                            N{lgaRecordedValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="rounded-lg bg-muted/30 px-3 py-2">
+                        <p className="text-sm text-muted-foreground">
+                          <span className="font-medium text-foreground">{lga}</span>
+                        </p>
+                      </div>
+                      {popAvailable != null && (
+                        <p className="mt-2 text-xs text-muted-foreground">
+                          Population data: {popAvailable ? 'available' : 'not available — population-normalized metrics not computed'}
+                        </p>
+                      )}
+                    </SignalCard>
+                  )
+                }
+                default:
                     return null
                 }
               })}
@@ -368,7 +427,7 @@ export default function ProjectContent() {
         )}
 
         {/* Context */}
-        {cluster || allocation ? (
+        {cluster ? (
           <>
             <SectionHeader
               title="Context"
@@ -436,30 +495,6 @@ export default function ProjectContent() {
                           </div>
                         </div>
                       )}
-                    </div>
-                  )}
-                  {allocation && (
-                    <div>
-                      <h3 className="flex items-center gap-2 text-sm font-medium text-foreground mb-3">
-                        <MapPin className="h-4 w-4" />
-                        LGA allocation context
-                      </h3>
-                      <div className="rounded-lg bg-muted/30 px-3 py-2">
-                        <p className="text-sm text-muted-foreground">
-                          <span className="font-medium text-foreground">{allocation.lga}</span>
-                          {' '}&middot; {allocation.project_count} projects
-                          {' '}&middot; Recorded value: N
-                          {(allocation.recorded_contract_value as number).toLocaleString(
-                            undefined,
-                            { maximumFractionDigits: 0 }
-                          )}
-                        </p>
-                      </div>
-                      <p className="mt-2 text-xs text-muted-foreground">
-                        Population data: {!(allocation.population_data_available as boolean)
-                          ? 'not available — population-normalized metrics not computed'
-                          : 'available'}
-                      </p>
                     </div>
                   )}
                 </div>

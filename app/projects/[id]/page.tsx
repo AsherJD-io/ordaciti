@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { getEvidenceById, getNormalizedById, getClusterForProject, getSignalsForProject, getAllocationContext } from '@/lib/data'
+import { getEvidenceById, getNormalizedById, getClusterForProject, getSignalsForProject } from '@/lib/data'
 import ProjectContent from './project-content'
 
 export async function generateStaticParams() {

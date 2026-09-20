@@ -30,21 +30,13 @@ export function getClusterForProject(pid: string) {
 }
 
 export function getSignalsForProject(pid: string) {
-  const result: Array<{ type: string; data: Record<string, string | number | string[] | number[] | boolean | null | undefined> }> = []
+  const project = evidence.find(e => String(e.project_id) === pid)
+  if (!project) return []
 
-  for (const s of signals) {
-    if (s.signal_type === 'EVIDENCE_GAP' && String(s.project_id) === pid) {
-      result.push({ type: 'EVIDENCE_GAP', data: s as Record<string, string | number | string[] | number[] | boolean | null | undefined> })
-    }
-    if (s.signal_type === 'REPEAT_INTERVENTION' && Array.isArray(s.project_ids) && s.project_ids.some(p => String(p) === pid)) {
-      result.push({ type: 'REPEAT_INTERVENTION', data: s as Record<string, string | number | string[] | number[] | boolean | null | undefined> })
-    }
-    if (s.signal_type === 'CONTRACTOR_RECURRENCE' && Array.isArray(s.project_ids) && s.project_ids.some(p => String(p) === pid)) {
-      result.push({ type: 'CONTRACTOR_RECURRENCE', data: s as Record<string, string | number | string[] | number[] | boolean | null | undefined> })
-    }
-  }
-
-  return result
+  return project.signals.map(s => ({
+    type: s.type,
+    data: s as Record<string, string | number | string[] | number[] | boolean | null | undefined>
+  }))
 }
 
 export function getAllocationContext(lga: string) {
