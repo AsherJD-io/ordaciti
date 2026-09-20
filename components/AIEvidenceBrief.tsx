@@ -122,7 +122,7 @@ export default function AIEvidenceBrief({ projectId }: AIEvidenceBriefProps) {
                 {result.what_we_know.length > 0 && (
                   <div>
                     <h3 className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
-                      <span className="h-4 w-4 rounded-full bg-green-100 flex items-center justify-center text-xs font-medium text-green-700">
+                      <span className="shrink-0 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
                         Known
                       </span>
                       What the evidence shows
@@ -144,7 +144,7 @@ export default function AIEvidenceBrief({ projectId }: AIEvidenceBriefProps) {
                 {result.what_changed.length > 0 && (
                   <div>
                     <h3 className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
-                      <span className="h-4 w-4 rounded-full bg-blue-100 flex items-center justify-center text-xs font-medium text-blue-700">
+                      <span className="shrink-0 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
                         Change
                       </span>
                       Patterns and changes
@@ -166,7 +166,7 @@ export default function AIEvidenceBrief({ projectId }: AIEvidenceBriefProps) {
                 {result.signals.length > 0 && (
                   <div>
                     <h3 className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
-                      <span className="h-4 w-4 rounded-full bg-amber-100 flex items-center justify-center text-xs font-medium text-amber-700">
+                      <span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
                         Signal
                       </span>
                       Signals detected
@@ -188,7 +188,7 @@ export default function AIEvidenceBrief({ projectId }: AIEvidenceBriefProps) {
                 {result.what_is_missing.length > 0 && (
                   <div>
                     <h3 className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
-                      <span className="h-4 w-4 rounded-full bg-red-100 flex items-center justify-center text-xs font-medium text-red-700">
+                      <span className="shrink-0 rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
                         Missing
                       </span>
                       What is missing
@@ -210,7 +210,7 @@ export default function AIEvidenceBrief({ projectId }: AIEvidenceBriefProps) {
                 {result.questions_for_review.length > 0 && (
                   <div>
                     <h3 className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
-                      <span className="h-4 w-4 rounded-full bg-purple-100 flex items-center justify-center text-xs font-medium text-purple-700">
+                      <span className="shrink-0 rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700">
                         ?
                       </span>
                       Questions for review
