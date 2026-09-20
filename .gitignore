@@ -12,7 +12,6 @@ out/
 # TypeScript build artifacts
 next-env.d.ts
 tsconfig.tsbuildinfo
-package-lock.json
 
 # Python
 __pycache__/
