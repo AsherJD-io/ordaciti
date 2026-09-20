@@ -10,6 +10,7 @@ import { SectionHeader } from '@/components/SectionHeader'
 import { Breadcrumb } from '@/components/Breadcrumb'
 import { StatusBadge } from '@/components/StatusBadge'
 import { SignalCard } from '@/components/SignalCard'
+import AIEvidenceBrief from '@/components/AIEvidenceBrief'
 
 export default function ProjectContent() {
   const params = useParams()
@@ -466,6 +467,9 @@ export default function ProjectContent() {
             </Card>
           </>
         ) : null}
+
+        {/* AI Evidence Brief */}
+        <AIEvidenceBrief projectId={id} />
 
         {/* Questions for review */}
         {project.questions_for_review.length > 0 && (
