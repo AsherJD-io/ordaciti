@@ -216,6 +216,31 @@ function buildEvidencePrompt(ev: EvidenceForPrompt): string {
   lines.push(`9. cite source IDs from the evidence where relevant.`)
   lines.push(`10. Keep the response concise and evidence-linked.`)
   lines.push(``)
+  lines.push(`--- LANGUAGE RULES (user-facing text only) ---`)
+  lines.push(`11. NEVER use implementation or technical language in the text you generate`)
+  lines.push(`    for the user. Do not use any of these words or concepts:`)
+  lines.push(`    undefined, null, NaN, field, property, schema, object, database,`)
+  lines.push(`    table, record structure, key, value, type, interface, class,`)
+  lines.push(`    function, variable, array, list, map, set, or any other`)
+  lines.push(`    programming, data-structure, or schema language.`)
+  lines.push(`12. When information is not available in the retrieved source records,`)
+  lines.push(`    use natural evidence language such as:`)
+  lines.push(`    - "X is not available in the retrieved source records"`)
+  lines.push(`    - "There is no evidence in the retrieved records for X"`)
+  lines.push(`    - "X is unavailable in the source"`)
+  lines.push(`    - "No information about X is present in the retrieved records"`)
+  lines.push(`    Do NOT say: "X is undefined", "X is null", "X is missing from the`)
+  lines.push(`    schema", "the field X is absent", or any similar implementation`)
+  lines.push(`    language.`)
+  lines.push(`13. For lifecycle assessment stages, describe only the stages that have`)
+  lines.push(`    recorded evidence in the retrieved records. Do not list stages that`)
+  lines.push(`    have no evidence. Do not describe the lifecycle assessment as a data`)
+  lines.push(`    structure or use the word "stage" in a technical sense.`)
+  lines.push(`14. If the lifecycle assessment summary shows that no stages have`)
+  lines.push(`    available evidence, say so in plain language — for example:`)
+  lines.push(`    "No lifecycle stages have recorded evidence in the retrieved source`)
+  lines.push(`    records." Do not describe the summary as a data object.`)
+  lines.push(``)
   lines.push(`--- PROJECT ---`)
   lines.push(`Project ID: ${ev.project_id}`)
   lines.push(``)
@@ -235,14 +260,31 @@ function buildEvidencePrompt(ev: EvidenceForPrompt): string {
       for (const [k, v] of Object.entries(d)) {
         if (k === 'population_data_available') continue
         if (k === 'lifecycle_assessment') {
-          lines.push(`  lifecycle_assessment:`)
+          lines.push(`  Lifecycle stages with recorded evidence in the retrieved records:`)
           const stages = d as Record<string, string>
+          const availableStages: string[] = []
           for (const [stage, status] of Object.entries(stages)) {
-            lines.push(`    ${stage}: ${status}`)
+            if (status === 'available' || status === 'partial') {
+              availableStages.push(stage)
+            }
+          }
+          if (availableStages.length > 0) {
+            for (const stage of availableStages) {
+              lines.push(`    - ${stage}`)
+            }
+          } else {
+            lines.push(`    None — no lifecycle stages have recorded evidence in the retrieved records.`)
           }
         } else if (k === 'summary') {
           const s = d as Record<string, number>
-          lines.push(`  summary: available=${s.available}, partial=${s.partial}, missing=${s.missing}, unknown=${s.unknown}`)
+          const available = s.available ?? 0
+          const partial = s.partial ?? 0
+          const recorded = available + partial
+          if (recorded === 0) {
+            lines.push(`  No lifecycle stages have recorded evidence in the retrieved source records.`)
+          } else {
+            lines.push(`  Lifecycle evidence in retrieved records: ${recorded} stage${recorded !== 1 ? 's' : ''} with evidence`)
+          }
         } else if (typeof v === 'number') {
           lines.push(`  ${k}: ${v.toLocaleString()}`)
         } else if (Array.isArray(v)) {

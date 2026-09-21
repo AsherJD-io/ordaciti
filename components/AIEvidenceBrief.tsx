@@ -206,28 +206,6 @@ export default function AIEvidenceBrief({ projectId }: AIEvidenceBriefProps) {
                   </div>
                 )}
 
-                {/* Questions for review */}
-                {result.questions_for_review.length > 0 && (
-                  <div>
-                    <h3 className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
-                      <span className="shrink-0 rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700">
-                        ?
-                      </span>
-                      Questions for review
-                    </h3>
-                    <ul className="space-y-1.5">
-                      {result.questions_for_review.map((item, i) => (
-                        <li key={i} className="flex items-start gap-2 text-sm">
-                          <span className="mt-1 shrink-0 rounded bg-purple-100 px-1.5 py-0.5 text-xs font-medium text-purple-700">
-                            Q{i + 1}
-                          </span>
-                          <span className="text-muted-foreground">{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
                 {/* Sources used */}
                 {result.sources_used.length > 0 && (
                   <div>
