@@ -1,23 +1,50 @@
 // AI evidence brief — structured interpretation of project evidence
 // Uses OpenAI-compatible API. Model and key from environment only.
+//
+// Caching: filesystem primary in local dev (data/AI_cache/).
+// In-memory only on Vercel/serverless — never touches the filesystem there.
+// Cache write failures never block an AI request.
 
 import OpenAI from 'openai'
-import { readFileSync, mkdir, writeFile } from 'node:fs'
 import fs from 'node:fs/promises'
+import fsSync from 'node:fs'
 import path from 'node:path'
 import crypto from 'node:crypto'
 import { getEvidenceById } from './data'
 
 // ---------------------------------------------------------------------------
-// Cache configuration
+// Environment detection
 // ---------------------------------------------------------------------------
 
+const isVercelProduction =
+  !!process.env.VERCEL                // Vercel runtime sets this
+  || process.env.NODE_ENV === 'production' && !process.env.DEV
+
+// In-memory cache: primary mechanism in all environments.
+// Keyed by projectId. Stale entries are naturally evicted when a new
+// deployment loads the module with a new evidence version.
+const memoryCache = new Map<string, CachedEntry>()
+
+interface CachedEntry {
+  evidenceVersion: string
+  response: ExplainResponse
+}
+
+// Filesystem cache is only usable where the data/ directory is writable.
+// In Vercel production this path lives under /var/task which is read-only.
 const CACHE_DIR = path.join(process.cwd(), 'data', 'AI_cache')
+const fsCacheAvailable =
+  !isVercelProduction &&
+  process.env.NODE_ENV !== 'production'
+
+// ---------------------------------------------------------------------------
+// Evidence version (computed once at module load)
+// ---------------------------------------------------------------------------
 
 function getEvidenceVersion(): string {
   const evidencePath = path.join(process.cwd(), 'data', 'processed', 'evidence.json')
   try {
-    const content = JSON.parse(readFileSync(evidencePath, 'utf-8'))
+    const content = JSON.parse(fsSync.readFileSync(evidencePath, 'utf-8'))
     const manifestStr = JSON.stringify(content.manifest, Object.keys(content.manifest).sort())
     return crypto.createHash('md5').update(manifestStr).digest('hex').substring(0, 12)
   } catch {
@@ -25,27 +52,56 @@ function getEvidenceVersion(): string {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Cache read / write — filesystem primary in local dev; in-memory only on Vercel
+// ---------------------------------------------------------------------------
+
 async function readCache(projectId: string, expectedVersion: string): Promise<ExplainResponse | null> {
-  const cacheFile = path.join(CACHE_DIR, `${projectId}.json`)
-  try {
-    const content = await fs.readFile(cacheFile, 'utf-8')
-    const cached = JSON.parse(content) as { metadata?: { evidence_version?: string }; response?: unknown }
-    if (cached.metadata?.evidence_version === expectedVersion && cached.response) {
-      return cached.response as ExplainResponse
+  if (fsCacheAvailable) {
+    // Local dev: filesystem is the source of truth. In-memory is not used
+    // so that test isolation is preserved — a writeCache call in one test
+    // cannot populate a shared in-memory entry that leaks into another test.
+    const cacheFile = path.join(CACHE_DIR, `${projectId}.json`)
+    try {
+      const content = await fs.readFile(cacheFile, 'utf-8')
+      const cached = JSON.parse(content) as { metadata?: { evidence_version?: string }; response?: unknown }
+      if (cached.metadata?.evidence_version === expectedVersion && cached.response) {
+        return cached.response as ExplainResponse
+      }
+    } catch {
+      // Filesystem read failure is non-fatal — fall through to model call.
     }
     return null
-  } catch {
-    return null
   }
+
+  // Vercel/serverless: in-memory only. Filesystem is never touched.
+  const memEntry = memoryCache.get(projectId)
+  if (memEntry && memEntry.evidenceVersion === expectedVersion) {
+    return memEntry.response
+  }
+  return null
 }
 
 async function writeCache(projectId: string, evidenceVersion: string, response: ExplainResponse): Promise<void> {
-  await fs.mkdir(CACHE_DIR, { recursive: true })
-  const cacheFile = path.join(CACHE_DIR, `${projectId}.json`)
-  await fs.writeFile(cacheFile, JSON.stringify({
-    metadata: { evidence_version: evidenceVersion, cached_at: new Date().toISOString() },
-    response,
-  }, null, 2))
+  if (fsCacheAvailable) {
+    // Local dev: write to filesystem only. Do not populate in-memory —
+    // see readCache above. A failure here is non-fatal; the AI request
+    // proceeds with a cache miss on the next call.
+    try {
+      await fs.mkdir(CACHE_DIR, { recursive: true })
+      const cacheFile = path.join(CACHE_DIR, `${projectId}.json`)
+      await fs.writeFile(cacheFile, JSON.stringify({
+        metadata: { evidence_version: evidenceVersion, cached_at: new Date().toISOString() },
+        response,
+      }, null, 2))
+    } catch {
+      // Non-fatal: cache miss on next call, AI request still proceeds.
+    }
+    return
+  }
+
+  // Vercel/serverless: in-memory only. Never touches the filesystem.
+  memoryCache.set(projectId, { evidenceVersion, response })
 }
 
 // ---------------------------------------------------------------------------
