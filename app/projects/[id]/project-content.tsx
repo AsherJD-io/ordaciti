@@ -159,9 +159,11 @@ export default function ProjectContent() {
                 const d = signal.data
                 switch (signal.type) {
                   case 'REPEAT_INTERVENTION': {
-                    const related = (d.project_ids as string[])?.filter(
-                      (p: string) => p !== id
-                    ) ?? []
+                    const related =
+                      (d.related_project_ids as string[] | undefined) ??
+                      (d.project_ids as string[] | undefined) ??
+                      []
+                    const filteredRelated = related.filter((p: string) => p !== id)
                     const intervals = d.intervals_days as number[] ?? []
                     return (
                       <SignalCard key={idx} type={signal.type} title="Repeat intervention pattern">
@@ -208,14 +210,16 @@ export default function ProjectContent() {
                             </div>
                           )}
                         </div>
-                        {related.length > 0 && (
+                        {filteredRelated.length > 0 && (
                           <div className="mt-3 pt-3 border-t border-border/50">
                             <p className="text-xs text-muted-foreground mb-1.5">Related projects:</p>
                             <div className="flex flex-wrap gap-1.5">
-                              {related.map((r) => (
-                                <Badge key={r} variant="outline">
-                                  #{r}
-                                </Badge>
+                              {filteredRelated.map((r) => (
+                                <Link key={r} href={`/projects/${r}`} className="block">
+                                  <Badge variant="outline">
+                                    #{r}
+                                  </Badge>
+                                </Link>
                               ))}
                             </div>
                           </div>
@@ -224,9 +228,11 @@ export default function ProjectContent() {
                     )
                   }
                   case 'CONTRACTOR_RECURRENCE': {
-                    const related = (d.project_ids as string[])?.filter(
-                      (p: string) => p !== id
-                    ) ?? []
+                    const related =
+                      (d.related_project_ids as string[] | undefined) ??
+                      (d.project_ids as string[] | undefined) ??
+                      []
+                    const filteredRelated = related.filter((p: string) => p !== id)
                     return (
                       <SignalCard key={idx} type={signal.type} title="Contractor recurrence">
                         <div className="mb-3 flex items-center gap-2">
@@ -264,14 +270,16 @@ export default function ProjectContent() {
                             </div>
                           )}
                         </div>
-                        {related.length > 0 && (
+                        {filteredRelated.length > 0 && (
                           <div className="mt-3 pt-3 border-t border-border/50">
                             <p className="text-xs text-muted-foreground mb-1.5">Related projects:</p>
                             <div className="flex flex-wrap gap-1.5">
-                              {related.map((r) => (
-                                <Badge key={r} variant="outline">
-                                  #{r}
-                                </Badge>
+                              {filteredRelated.map((r) => (
+                                <Link key={r} href={`/projects/${r}`} className="block">
+                                  <Badge variant="outline">
+                                    #{r}
+                                  </Badge>
+                                </Link>
                               ))}
                             </div>
                           </div>
