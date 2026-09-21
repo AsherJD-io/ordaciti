@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowRight, Building2, MapPin, FileSearch, Layers, Shield } from 'lucide-react'
+import { ArrowRight, MapPin, FileSearch, Layers, Shield } from 'lucide-react'
 import { evidence, patterns } from '@/lib/data'
 import { Card } from '@/components/Card'
 import { Badge } from '@/components/Badge'
@@ -33,13 +33,11 @@ export default function Home() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
-                <Building2 className="h-5 w-5" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-lg font-semibold tracking-tight text-foreground">Ordaciti</span>
-                <span className="text-xs text-muted-foreground">Public Decision Intelligence</span>
-              </div>
+              <img
+                src="/brand/ordaciti-logo-navbar.svg"
+                alt="Ordaciti — Public Decision Intelligence"
+                className="h-9 w-auto"
+              />
             </div>
             <nav className="hidden sm:flex items-center gap-8 text-sm">
               <Link href="/" className="font-medium text-foreground">Home</Link>
@@ -252,9 +250,11 @@ export default function Home() {
         <div className="mx-auto max-w-6xl px-4 text-center sm:text-left">
           <div className="flex flex-col gap-2 sm:flex-row sm:justify-between">
             <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
-                <Building2 className="h-4 w-4" />
-              </div>
+              <img
+                src="/brand/ordaciti-icon.svg"
+                alt="Ordaciti"
+                className="h-6 w-auto"
+              />
               <span className="text-sm font-medium text-foreground">Ordaciti</span>
             </div>
             <p className="text-sm text-muted-foreground">

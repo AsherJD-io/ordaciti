@@ -46,6 +46,13 @@ export default function ProjectsPage() {
       <header className="sticky top-0 z-10 border-b border-border/60 bg-white/90 backdrop-blur supports-backdrop-blur:bg-white/80">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-14 items-center justify-between">
+            <div className="flex items-center gap-3">
+              <img
+                src="/brand/ordaciti-logo-navbar.svg"
+                alt="Ordaciti"
+                className="h-9 w-auto"
+              />
+            </div>
             <Breadcrumb href="/" label="Back to home" />
             <nav className="flex items-center gap-6 text-sm">
               <Link href="/" className="text-muted-foreground hover:text-foreground transition-colors">Home</Link>

@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id } = await params
   const ev = getEvidenceById(id)
   const title = ev?.facts.find(f => f.text.startsWith('Project title:'))?.text.replace('Project title: ', '') ?? `Project ${id}`
-  return { title: `${title} — Ordaciti` }
+  return { title: title }
 }
 
 export default function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
