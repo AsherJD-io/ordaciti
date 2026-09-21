@@ -237,9 +237,13 @@ function buildEvidencePrompt(ev: EvidenceForPrompt): string {
   lines.push(`    have no evidence. Do not describe the lifecycle assessment as a data`)
   lines.push(`    structure or use the word "stage" in a technical sense.`)
   lines.push(`14. If the lifecycle assessment summary shows that no stages have`)
-  lines.push(`    available evidence, say so in plain language — for example:`)
+  lines.push(`    available evidence, say so in plain language. For example:`)
   lines.push(`    "No lifecycle stages have recorded evidence in the retrieved source`)
   lines.push(`    records." Do not describe the summary as a data object.`)
+  lines.push(`15. NEVER use the em dash character (—) in any text you generate for the`)
+  lines.push(`    user. Use normal punctuation instead: commas, full stops, colons,`)
+  lines.push(`    or parentheses. If you would naturally reach for an em dash, use a`)
+  lines.push(`    comma, a full stop, or reword the sentence.`)
   lines.push(``)
   lines.push(`--- PROJECT ---`)
   lines.push(`Project ID: ${ev.project_id}`)
@@ -273,7 +277,7 @@ function buildEvidencePrompt(ev: EvidenceForPrompt): string {
               lines.push(`    - ${stage}`)
             }
           } else {
-            lines.push(`    None — no lifecycle stages have recorded evidence in the retrieved records.`)
+            lines.push(`    "None. No lifecycle stages have recorded evidence in the retrieved records."`)
           }
         } else if (k === 'summary') {
           const s = d as Record<string, number>
@@ -524,7 +528,30 @@ export async function explainProject(request: ExplainRequest, forceRefresh = fal
     const evidenceVersion = getEvidenceVersion()
     await writeCache(trimmedId, evidenceVersion, parsed as ExplainResponse)
 
-    return parsed as ExplainResponse
+    // Strip em dashes from user-facing generated text as a safety net
+    // (the prompt instructs the model not to use them, but this catches any
+    //  that slip through without altering evidence semantics)
+    const cleaned = {
+      ...parsed,
+      summary: parsed.summary.replace(/\u2014/g, ''),
+      what_we_know: (parsed.what_we_know || []).map((item: string) =>
+        item.replace(/\u2014/g, ''),
+      ),
+      what_changed: (parsed.what_changed || []).map((item: string) =>
+        item.replace(/\u2014/g, ''),
+      ),
+      signals: (parsed.signals || []).map((item: string) =>
+        item.replace(/\u2014/g, ''),
+      ),
+      what_is_missing: (parsed.what_is_missing || []).map((item: string) =>
+        item.replace(/\u2014/g, ''),
+      ),
+      questions_for_review: (parsed.questions_for_review || []).map((item: string) =>
+        item.replace(/\u2014/g, ''),
+      ),
+    }
+
+    return cleaned as ExplainResponse
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     // Distinguish rate limits / auth errors from timeouts

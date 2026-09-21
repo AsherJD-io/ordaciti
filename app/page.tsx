@@ -5,7 +5,7 @@ import { Card } from '@/components/Card'
 import { Badge } from '@/components/Badge'
 
 export const metadata = {
-  title: 'Ordaciti — Public Decision Intelligence',
+  title: 'Ordaciti - Public Decision Intelligence',
   description: 'Connecting government projects across time and location to reveal patterns, evidence gaps and system-level questions around public expenditure.',
 }
 
@@ -35,7 +35,7 @@ export default function Home() {
             <div className="flex items-center gap-3">
               <img
                 src="/brand/ordaciti-logo-navbar.svg"
-                alt="Ordaciti — Public Decision Intelligence"
+                alt="Ordaciti - Public Decision Intelligence"
                 className="h-9 w-auto"
               />
             </div>
@@ -113,7 +113,7 @@ export default function Home() {
           <div className="mb-8">
             <h2 className="text-xl font-semibold tracking-tight text-foreground">Intelligence signals</h2>
             <p className="mt-2 text-muted-foreground">
-              Ordaciti surfaces observable patterns from the available evidence — without making judgements.
+              Ordaciti surfaces observable patterns from the available evidence, without making judgements.
             </p>
           </div>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -125,7 +125,7 @@ export default function Home() {
                 <div className="min-w-0">
                   <h3 className="font-semibold text-foreground">Repeat interventions</h3>
                   <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">
-                    Projects cluster around recurring interventions in the same location and sector — flagging potential program patterns for review.
+                    Projects cluster around recurring interventions in the same location and sector, flagging potential program patterns for review.
                   </p>
                   <div className="mt-3 flex items-center gap-2">
                     <Badge variant="outline">{repeatCount} signals</Badge>
@@ -141,7 +141,7 @@ export default function Home() {
                 <div className="min-w-0">
                   <h3 className="font-semibold text-foreground">Contractor recurrence</h3>
                   <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">
-                    Identifies contractors appearing across multiple projects — useful for understanding procurement patterns.
+                    Identifies contractors appearing across multiple projects, useful for understanding procurement patterns.
                   </p>
                   <div className="mt-3 flex items-center gap-2">
                     <Badge variant="outline">{contractorCount} signals</Badge>
@@ -157,7 +157,7 @@ export default function Home() {
                 <div className="min-w-0">
                   <h3 className="font-semibold text-foreground">Evidence gaps</h3>
                   <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">
-                    Maps the project lifecycle against available evidence — highlighting where documentation is thin or absent.
+                    Maps the project lifecycle against available evidence, highlighting where documentation is thin or absent.
                   </p>
                   <div className="mt-3 flex items-center gap-2">
                     <Badge variant="outline">{evidenceGapCount} signals</Badge>
@@ -186,7 +186,7 @@ export default function Home() {
                   <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
                     Every project page shows the facts recorded in source data, the signals
                     derived from those facts, and what is missing. Missing evidence is described
-                    as unavailable — not as proof that something did not happen.
+                    as unavailable, not as proof that something did not happen.
                   </p>
                 </div>
               </div>
@@ -215,7 +215,7 @@ export default function Home() {
                   <h3 className="font-semibold text-foreground">Questions for human review</h3>
                   <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
                     Each project includes neutral review questions grounded in the available
-                    evidence. Ordaciti does not decide what citizens should believe — it gives
+                    evidence. Ordaciti does not decide what citizens should believe. It gives
                     them a clearer evidence base for asking better questions.
                   </p>
                 </div>
@@ -233,8 +233,8 @@ export default function Home() {
             <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
               Across the {projectCount.toLocaleString()} projects analysed, most lack implementation-stage
               evidence: completion reports, payment records, and photographs are not available
-              in the retrieved source data. This does not mean those activities did not happen —
-              it means the available public records do not show them.
+              in the retrieved source data. This does not mean those activities did not happen.
+              It means the available public records do not show them.
             </p>
             <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
               Ordaciti represents each lifecycle stage as available, partial, missing, or unknown.

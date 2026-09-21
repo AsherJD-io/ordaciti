@@ -367,7 +367,7 @@ export default function ProjectContent() {
                         </div>
                         {popAvailable != null && (
                           <p className="mt-2 text-xs text-muted-foreground">
-                            Population data: {popAvailable ? 'available' : 'not available — population-normalized metrics not computed'}
+                            Population data: {popAvailable ? 'available' : 'not available, population-normalized metrics not computed'}
                           </p>
                         )}
                       </SignalCard>
@@ -397,7 +397,7 @@ export default function ProjectContent() {
                       </div>
                       {popAvailable != null && (
                         <p className="mt-2 text-xs text-muted-foreground">
-                          Population data: {popAvailable ? 'available' : 'not available — population-normalized metrics not computed'}
+                          Population data: {popAvailable ? 'available' : 'not available, population-normalized metrics not computed'}
                         </p>
                       )}
                     </SignalCard>
