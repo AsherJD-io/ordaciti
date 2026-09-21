@@ -1,10 +1,13 @@
 // Data loading utilities for Ordaciti frontend
 // Loads processed JSON data from the repository
+// Applies validated display corrections at the display layer.
+// Source values are NEVER modified. Corrections are presentation-only.
 
 import evidenceData from '@/data/processed/evidence.json'
 import normalizedData from '@/data/processed/normalized_projects.json'
 import patternsData from '@/data/processed/patterns.json'
 import signalsData from '@/data/processed/signals.json'
+import { getDisplayTitle, getCorrectedFieldValue, getDisplayValue } from './displayCorrections'
 
 export const evidence = evidenceData.evidence
 export const evidenceManifest = evidenceData.manifest
@@ -68,13 +71,12 @@ export function buildProjectList(): ProjectListItem[] {
 
   return evidence.map(e => {
     const np = normalizedMap.get(e.project_id)
-    const titleFact = e.facts.find(f => f.text.startsWith('Project title:'))
     return {
       project_id: e.project_id,
-      title: titleFact ? titleFact.text.slice('Project title: '.length) : (np?.title ?? 'Untitled'),
-      lga: np?.normalized_lga ?? null,
+      title: getDisplayTitle(e.facts),
+      lga: getCorrectedFieldValue('location_lga', np?.normalized_lga ?? null),
       sector: np?.normalized_sector ?? null,
-      mda: np?.normalized_mda ?? null,
+      mda: getCorrectedFieldValue('executing_mda', np?.normalized_mda ?? null) ?? np?.normalized_mda ?? null,
       contract_amount: np?.normalized_contract_amount ?? null,
       budget_amount: np?.normalized_budget_amount ?? null,
       date_of_advert: np?.normalized_date_of_advert ?? null,

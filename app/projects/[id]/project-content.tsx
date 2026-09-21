@@ -4,6 +4,7 @@ import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, ExternalLink, Building2, MapPin, FileText, AlertTriangle, HelpCircle, Layers } from 'lucide-react'
 import { getEvidenceById, getNormalizedById, getClusterForProject, getSignalsForProject } from '@/lib/data'
+import { getDisplayTitle, getCorrectedFieldValue } from '@/lib/displayCorrections'
 import { Card, CardContent } from '@/components/Card'
 import { Badge } from '@/components/Badge'
 import { SectionHeader } from '@/components/SectionHeader'
@@ -44,12 +45,7 @@ export default function ProjectContent() {
     )
   }
 
-  const titleFact = project.facts.find((f: { text: string }) =>
-    f.text.startsWith('Project title:')
-  )
-  const title = titleFact
-    ? titleFact.text.slice('Project title: '.length)
-    : 'Untitled'
+  const title = getDisplayTitle(project.facts)
 
   return (
     <div className="min-h-screen bg-background">
@@ -93,7 +89,7 @@ export default function ProjectContent() {
                   {normalized?.normalized_lga && (
                     <span className="inline-flex items-center gap-1.5">
                       <MapPin className="h-3.5 w-3.5" />
-                      {normalized.normalized_lga}
+                      {getCorrectedFieldValue('location_lga', normalized.normalized_lga)}
                     </span>
                   )}
                   {normalized?.normalized_sector && (
@@ -102,7 +98,11 @@ export default function ProjectContent() {
                       {normalized.normalized_sector}
                     </span>
                   )}
-                  {normalized?.normalized_mda && <span>{normalized.normalized_mda}</span>}
+                  {normalized?.normalized_mda && (
+                    <span className="font-medium text-foreground">
+                      {getCorrectedFieldValue('executing_mda', normalized.normalized_mda)}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -230,7 +230,7 @@ export default function ProjectContent() {
                     return (
                       <SignalCard key={idx} type={signal.type} title="Contractor recurrence">
                         <div className="mb-3 flex items-center gap-2">
-                          <Badge variant="primary">{d.contractor}</Badge>
+                          <Badge variant="primary">{getCorrectedFieldValue('contractor', d.contractor as string | null | undefined)}</Badge>
                           <Badge variant="muted">
                             {d.project_count} project{d.project_count !== 1 ? 's' : ''}
                           </Badge>
