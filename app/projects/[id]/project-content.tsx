@@ -99,7 +99,7 @@ export default function ProjectContent() {
                     </span>
                   )}
                   {normalized?.normalized_mda && (
-                    <span className="font-medium text-foreground">
+                    <span className="inline-flex items-center gap-1.5">
                       {getCorrectedFieldValue('executing_mda', normalized.normalized_mda)}
                     </span>
                   )}
